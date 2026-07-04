@@ -144,6 +144,55 @@ final class MissionControlEngine {
     /// tick instead of leaving the lights dead.
     private var sessionActive = false
 
+    /// Whether the lifecycle poll observed the Dock's layer-18 exposé surface at
+    /// least once during the current session. A session that lives and dies
+    /// WITHOUT this ever going true was opened by the AX expose notification but
+    /// never confirmed by the poll — on a healthy macOS that ~never happens, so
+    /// its teardown fires the one-shot field tripwire (`logExposeSurfaceNeverSeen`)
+    /// that dumps where every non-standard-layer window lives, at `.notice` so a
+    /// post-hoc `log show` retrieves it (the `.debug` hot path is not persisted).
+    /// That single line is what lets a "no icons on macOS N+1" report be diagnosed
+    /// remotely if a release moves the surface off layer 18 / off the Dock. Set
+    /// only by the poll's live observation (never seeded like `mcSurfacePresent`);
+    /// reset in `endSession` — begin paths must not touch it, since the poll sets
+    /// it just before calling `beginSession` on a poll-detected open.
+    private var surfaceSeenThisSession = false
+
+    /// One-shot latch for the "capability prewarm all-dark" tripwire — see
+    /// `mergeBackgroundResolutions`. Reset at every `beginSession`.
+    private var loggedPrewarmAllDark = false
+
+    /// Consecutive churning refreshes (~100 ms each) while a session is live,
+    /// for the settle-starvation field tripwire: a macOS release that re-animates
+    /// Mission Control (continuous micro-motion / long eased tails) keeps
+    /// `didRetile` reading churn forever, `layoutSettled` never flips true, and
+    /// the lights never show anywhere while session/AX/permissions all look
+    /// healthy. When this passes `churnStarvationTicks` (~5 s — no real MC enter
+    /// or re-tile animates that long), one `.notice` line reports WHAT is moving
+    /// (`ThumbnailLayout.churnSample`) so a post-hoc `log show` both fingerprints
+    /// the failure mode and carries the data needed to retune the settle gate.
+    /// Reset whenever a refresh is not churning and in `resetSettleState`; the
+    /// one-shot latch re-arms per settle-cycle (`resetSettleState`) so distinct
+    /// starvation episodes in one long session each get a line.
+    private var churnTicks = 0
+    private var loggedChurnStarvation = false
+
+    /// Degraded-settle mode — the SELF-HEAL for the starved settle gate. While
+    /// false (every session's start), churn is judged by the strict exact
+    /// integer-pixel gate, which is the ratified design: any tolerance from the
+    /// start lets a paused interactive scrub read as "settled" and lights up
+    /// mid-gesture. When the strict gate has been starved for
+    /// `churnStarvationTicks` (~5 s — beyond any real enter/re-tile animation,
+    /// so only an OS that keeps thumbnails in perpetual micro-motion gets here,
+    /// as macOS 27's re-animated Mission Control does), churn judgment falls
+    /// back to `degradedSettleTolerancePx` so micro-jitter reads as settled and
+    /// the lights recover ~200 ms later through the NORMAL settle path (same
+    /// rebuild + sink-watch, one uniform rule). A real re-tile still reads as
+    /// churn in this mode — its per-tick deltas are tens of pixels. Cleared at
+    /// every `resetSettleState` (session begin / resync / end) so each session
+    /// starts strict.
+    private var degradedSettle = false
+
     /// Whether the Dock's exposé surface (layer 18) was present at the last
     /// lifecycle-poll tick. `sessionActive` lingers ~600 ms after Mission Control
     /// actually closes (the close-miss debounce that lets a trackpad swipe's
@@ -302,6 +351,7 @@ final class MissionControlEngine {
         capabilityCache = [:]
         backgroundResolveRounds = [:] // fresh retry budget; in-flight ids clear at merge
         awaitFreshHoverAfterClick = false
+        loggedPrewarmAllDark = false
         // Do NOT seed `lastMouseLocation` here: it stays `nil` (from `endSession`) so the
         // first resolve once the layout settles always shows the lights even with a
         // stationary cursor — a Mission Control swipe never moves the cursor, so seeding
@@ -343,23 +393,29 @@ final class MissionControlEngine {
         }
     }
 
-    /// Mission Control draws a Dock-owned exposé surface at window **layer 18**
-    /// for the whole time it is visible; polling for it is a *reliable* "is MC
-    /// open?" signal (verified: layer-18 Dock windows exist only while MC is up).
-    /// We drive the session on this, not on the AX expose notifications, which the
-    /// Dock fires spuriously during trackpad swipes. Matched by the Dock pid (the
-    /// owner name is localized — "程序坞" etc.) so it is locale-independent.
-    /// Whether Mission Control's layer-18 exposé surface is on screen right now,
-    /// read in ONE `CGWindowList` pass. This is the authority for opening AND
-    /// ending a session. Matched against the LIVE Dock pid, not the observer's
+    /// Mission Control draws an exposé surface for the whole time it is visible —
+    /// Dock-owned at **layer 18** on macOS ≤26, WindowManager-owned at **layer
+    /// 19** on macOS 27+ (Golden Gate moved it; see `MissionControlSurface`) —
+    /// and polling for it is a *reliable* "is MC open?" signal. We drive the
+    /// session on this, not on the AX expose notifications, which the Dock fires
+    /// spuriously during trackpad swipes on ≤26 and stopped posting entirely on
+    /// 27 (so there the poll is the ONLY open detection). Matched by pid (owner
+    /// names are localized — "程序坞" etc.) so it is locale-independent.
+    /// Whether an exposé surface is on screen right now is read in ONE
+    /// `CGWindowList` pass. This is the authority for opening AND ending a
+    /// session. Matched against the LIVE pids, not the observer's
     /// `armedDockPID`: the latter is `nil` until the AXObserver has armed and goes
     /// stale across a Dock relaunch, so coupling detection to it blinds opens
     /// during a Dock-down-at-launch race until the ~2 s health poll re-arms; the
-    /// live pid self-heals immediately.
+    /// live pids self-heal immediately.
     private func missionControlSurfacePresent() -> Bool {
-        guard let dockPID = MissionControlObserver.currentDockPID() else { return false }
+        let dockPID = MissionControlObserver.currentDockPID()
+        let windowManagerPID = MissionControlObserver.currentWindowManagerPID()
+        guard dockPID != nil || windowManagerPID != nil else { return false }
         let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []
-        return MissionControlSurface.exposeSurfacePresent(in: info, dockPID: dockPID)
+        return MissionControlSurface.exposeSurfacePresent(
+            in: info, dockPID: dockPID, windowManagerPID: windowManagerPID
+        )
     }
 
     /// The authority on the session lifecycle (runs for the whole engine lifetime).
@@ -390,6 +446,7 @@ final class MissionControlEngine {
                 self.mcSurfacePresent = surfacePresent
                 if surfacePresent {
                     closeMisses = 0
+                    self.surfaceSeenThisSession = true
                     if !self.sessionActive { self.beginSession() }
                 } else if self.sessionActive {
                     // Surface gone — stop intercepting shortcuts immediately (above),
@@ -397,12 +454,30 @@ final class MissionControlEngine {
                     // close-miss debounce.
                     closeMisses += 1
                     if closeMisses >= 5 { // ~600 ms gone — a genuine close
+                        // Field tripwire: an AX-notification-opened session that the
+                        // poll never once confirmed means the layer-18 signal itself
+                        // is broken on this OS — dump the layer landscape before the
+                        // teardown wipes the state (see `surfaceSeenThisSession`).
+                        if !self.surfaceSeenThisSession { self.logExposeSurfaceNeverSeen() }
                         Log.missionControl.notice("lifecycle-poll: Mission Control gone → end session")
                         self.endSession()
                     }
                 }
             }
         }
+    }
+
+    /// Field tripwire body: one `.notice` dump of every non-standard-layer window
+    /// (`owner(pid)@layer:WxH`), fired at the teardown of a session the poll never
+    /// confirmed. Mission Control is typically still on screen at this moment (the
+    /// session exists because the AX notification saw it open), so if a macOS
+    /// release moved the exposé surface off Dock/layer-18, its new home is in this
+    /// line — enough to re-pin `MissionControlSurface` remotely from a user's
+    /// `log show` output alone.
+    private func logExposeSurfaceNeverSeen() {
+        let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []
+        let summary = MissionControlSurface.layerDiagnostic(in: info)
+        Log.missionControl.notice("expose surface never seen this session — non-zero-layer windows: \(summary, privacy: .public)")
     }
 
     /// Re-pick the Y-flip pivot and hide the stale overlay until the now-active
@@ -423,6 +498,7 @@ final class MissionControlEngine {
         let wasLive = mouseTask != nil
         sessionActive = false
         mcSurfacePresent = false
+        surfaceSeenThisSession = false
         windowFrames = [:]
         capabilityCache = [:]
         backgroundResolveRounds = [:] // in-flight ids clear at merge (guarded by sessionActive)
@@ -448,6 +524,9 @@ final class MissionControlEngine {
         layoutSettled = false
         stableTicks = 0
         sinkWatchTicks = 0
+        churnTicks = 0
+        loggedChurnStarvation = false
+        degradedSettle = false
     }
 
     // MARK: - Recovery observers (Space change / Dock relaunch)
@@ -511,15 +590,23 @@ final class MissionControlEngine {
 
     private func refreshWindows() {
         let overlayID = overlayWindow.map { CGWindowID($0.windowNumber) }
-        // Exclude the Dock by PID: `kCGWindowOwnerName` is LOCALIZED ("程序坞",
+        // Exclude system owners by PID: `kCGWindowOwnerName` is LOCALIZED ("程序坞",
         // …), so the name-based exclusion silently misses on every non-English
-        // system and the Dock's layer-0 surface joins the hover candidates —
+        // system and the owner's layer-0 surface joins the hover candidates —
         // hovering it resolves no AX window and the lights go dark. The name
         // set stays as an English-system belt-and-suspenders only.
+        // WindowManager joins the exclusion for macOS 27: while MC is open it
+        // draws a layer-0 hover-highlight window a few px LARGER than, and on
+        // top of, whichever thumbnail the cursor is over (verified on 26A5368g:
+        // 987x750 chrome around a 975x737 thumbnail) — without the pid
+        // exclusion `frontmost(containing:)` resolves that chrome for EVERY
+        // hovered thumbnail and the lights stay dark on all of them, the same
+        // failure class as the localized-Dock bug.
         let dockPID = MissionControlObserver.currentDockPID()
+        let windowManagerPID = MissionControlObserver.currentWindowManagerPID()
         windows = enumerator.actionableWindows(
-            excludingOwners: ["Dock"],
-            excludingPIDs: dockPID.map { [$0] } ?? []
+            excludingOwners: ["Dock", "WindowManager"],
+            excludingPIDs: Set([dockPID, windowManagerPID].compactMap(\.self))
         )
             .filter { window in
                 // Never the overlay window itself (it is a high-level window,
@@ -563,7 +650,11 @@ final class MissionControlEngine {
         // the animation.
         let newFrames = Dictionary(windows.map { ($0.windowID, $0.frame) }, uniquingKeysWith: { first, _ in first })
         let hadBaseline = !windowFrames.isEmpty
-        let churning = ThumbnailLayout.didRetile(from: windowFrames, to: newFrames)
+        let churning = ThumbnailLayout.didRetile(
+            from: windowFrames, to: newFrames,
+            tolerance: degradedSettle ? Self.degradedSettleTolerancePx : 0
+        )
+        let oldFrames = windowFrames // kept one tick for the starvation tripwire's churn sample
         windowFrames = newFrames
         // The first refresh of a session only establishes the baseline — there is
         // nothing to compare against yet, so it is neither churning nor settled.
@@ -581,7 +672,26 @@ final class MissionControlEngine {
                 hovered = nil
                 Log.missionControl.debug("layout churning → hide overlay until settle")
             }
+            // Field tripwire + SELF-HEAL: no real MC enter/re-tile churns this long —
+            // sustained churn means the settle gate is being starved (an OS keeping
+            // thumbnails in perpetual micro-motion, e.g. macOS 27's re-animated
+            // Mission Control) and the lights would never show. Log one `.notice`
+            // with a movement sample (retrievable post-hoc via `log show`), then
+            // switch churn judgment to the degraded tolerance so micro-jitter reads
+            // as settled and the lights recover through the normal settle path a few
+            // ticks later. If even the tolerant compare keeps reading churn, the
+            // layout is genuinely moving (>2 px/tick sustained) and showing lights
+            // would chase it — correctly stays hidden.
+            churnTicks += 1
+            if !loggedChurnStarvation, churnTicks >= Self.churnStarvationTicks {
+                loggedChurnStarvation = true
+                degradedSettle = true
+                churnTicks = 0
+                let sample = ThumbnailLayout.churnSample(from: oldFrames, to: newFrames)
+                Log.missionControl.notice("layout never settled — churning \(Self.churnStarvationTicks, privacy: .public) consecutive refreshes (~\(Self.churnStarvationTicks / 10, privacy: .public) s), falling back to degraded settle (tolerance \(Self.degradedSettleTolerancePx, privacy: .public)px): \(sample, privacy: .public)")
+            }
         } else if !layoutSettled {
+            churnTicks = 0
             stableTicks += 1
             if stableTicks >= Self.settleTicks { // held still → MC has finished tiling
                 layoutSettled = true
@@ -613,6 +723,22 @@ final class MissionControlEngine {
     /// "settled". Two (~200 ms) debounces the enter/re-tile animation's mid-flight
     /// micro-pauses into a single show, with no perceptible delay once MC is at rest.
     private static let settleTicks = 2
+
+    /// Consecutive churning refreshes (~100 ms each) after which the settle gate is
+    /// considered STARVED: the tripwire logs its one-shot churn sample and the
+    /// engine falls back to degraded settle. ~5 s: comfortably beyond any real
+    /// Mission Control enter or re-tile animation, so it can only fire when the
+    /// layout genuinely never comes to rest — the one healthy-system way to reach
+    /// it is holding a paused interactive scrub for 5+ s, where showing the lights
+    /// is acceptable (the original "paused swipe shows early" bug was an
+    /// IMMEDIATE show on every brief pause, not a 5 s hold).
+    private static let churnStarvationTicks = 50
+
+    /// Per-edge integer-pixel movement still treated as "holding still" in
+    /// degraded-settle mode. 2 px: absorbs ease-out tails and animation
+    /// micro-jitter (sub-2 px/100 ms), while a real re-tile — tens of pixels per
+    /// tick — still reads as churn and keeps the overlay hidden mid-animation.
+    private static let degradedSettleTolerancePx = 2
 
     /// How many `trackMouse` ticks (~60 ms each) after a settle to keep re-asserting
     /// the overlay show. ~30 ticks (~1.8 s) comfortably outlasts the Dock finishing
@@ -852,6 +978,21 @@ final class MissionControlEngine {
         if hoveredResolved, layoutSettled, geometry == nil, !suppressOverlayReshow, !awaitFreshHoverAfterClick {
             repositionOverlay()
         }
+        // Field tripwire: a batch of several real thumbnails where NOT ONE window
+        // resolved a button — and nothing else cached this session either — is
+        // the fingerprint of the AX matching pipeline breaking OS-wide
+        // (`_AXUIElementGetWindow` unpaired, or trusted-but-failing reads): the
+        // overlay then stays dark on EVERY window while permission looks fine.
+        // One `.notice` line per session, retrievable post-hoc via `log show`
+        // (the per-app `capability resolve` `.debug` lines are not persisted).
+        // ≥3 windows so a lone genuine popover batch can't false-positive.
+        if !loggedPrewarmAllDark, capabilityCache.isEmpty, resolutions.count >= 3 {
+            let summary = CapabilityBatchSummary(of: resolutions.values)
+            if summary.isAllDark {
+                loggedPrewarmAllDark = true
+                Log.missionControl.notice("capability prewarm ALL-DARK (\(summary.logDescription, privacy: .public)) — AX trusted but no window resolved buttons")
+            }
+        }
     }
 
     /// Hide the overlay window and drop the resolved geometry + action mapping. The
@@ -1036,7 +1177,20 @@ final class MissionControlEngine {
         // window until MC was reopened. `.canJoinAllSpaces` makes it follow across
         // desktops; `.ignoresCycle` keeps it out of window cycling. (OpenMissionControl
         // sets no collection behavior at all and is immune to this.)
-        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]
+        var behavior: NSWindow.CollectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]
+        // macOS 27 "Golden Gate": Mission Control is composited by WindowManager,
+        // which hides EVERY non-participating window while MC is open regardless
+        // of window level — A/B-probed on 26A5368g: both a `.screenSaver`-level
+        // and a shielding-level window vanish during MC unless they carry
+        // `.stationary` ("unaffected by Exposé"), with which they composite above
+        // the exposé surface. Without this the whole pipeline runs (session,
+        // settle, hover, `overlay show` with a lying `visible=y`) yet nothing is
+        // on screen. Gated to 27+ only because the ≤26 Dock-drawn MC composites
+        // the overlay correctly with the base set (verified through 26) and that
+        // shipped-working recipe should not change on a version we can no longer
+        // regression-test locally.
+        if #available(macOS 27.0, *) { behavior.insert(.stationary) }
+        window.collectionBehavior = behavior
         overlayWindow = window
     }
 
