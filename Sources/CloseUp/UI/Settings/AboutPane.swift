@@ -18,7 +18,7 @@ struct AboutPane: View {
                 .resizable()
                 .frame(width: DS.Size.aboutIcon, height: DS.Size.aboutIcon)
 
-            Text(verbatim: "CloseUp")
+            Text(verbatim: "CloseUpPlus")
                 .font(DS.Font.appName)
 
             Text(verbatim: version)
@@ -30,7 +30,7 @@ struct AboutPane: View {
                 .foregroundStyle(.secondary)
 
             HStack(spacing: DS.Spacing.lg) {
-                Link(destination: URL(string: "https://github.com/oomol-lab/CloseUp")!) {
+                Link(destination: URL(string: "https://github.com/FLAMEEERT/CloseUpPlus")!) {
                     Text(verbatim: "GitHub")
                 }
                 Button(appState.loc("Acknowledgements")) { showingAcknowledgements = true }

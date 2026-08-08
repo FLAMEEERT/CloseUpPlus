@@ -13,7 +13,7 @@ struct GeneralSettingsPane: View {
         Form {
             Section {
                 Toggle(isOn: $appState.isEnabled) {
-                    Text(appState.loc("Enable CloseUp"))
+                    Text(appState.loc("Enable CloseUpPlus"))
                     Text(appState.loc("Show window controls in Mission Control."))
                         .settingsFooter()
                 }
@@ -55,7 +55,7 @@ struct GeneralSettingsPane: View {
             } header: {
                 Text(appState.loc("Permission"))
             } footer: {
-                Text(appState.loc("CloseUp uses Accessibility to read Mission Control windows and perform its controls. Screen Recording is separate and used only for Pin: it mirrors only the selected window locally, captures no audio, records or saves no files, uploads no frames, and sends no analytics payload."))
+                Text(appState.loc("CloseUpPlus uses Accessibility to read Mission Control windows and perform its controls. Screen Recording is separate and used only for Pin: it mirrors only the selected window locally, captures no audio, records or saves no files, uploads no frames, and sends no analytics payload."))
                     .settingsFooter()
             }
 
@@ -125,7 +125,7 @@ struct GeneralSettingsPane: View {
             Text(appState.loc("Screen Recording access was denied. Allow it in System Settings to use Pin."))
                 .settingsFooter()
         case .needsRetry:
-            Text(appState.loc("Screen Recording access was allowed, but CloseUp must be restarted before Pin can use it."))
+            Text(appState.loc("Screen Recording access was allowed, but CloseUpPlus must be restarted before Pin can use it."))
                 .settingsFooter()
         case .revoked:
             Text(appState.loc("Screen Recording access was revoked. Re-enable it to use Pin."))

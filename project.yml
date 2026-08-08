@@ -75,10 +75,10 @@ targets:
       - package: PermissionFlow
     settings:
       base:
-        PRODUCT_NAME: CloseUp
+        PRODUCT_NAME: CloseUpPlus
         PRODUCT_MODULE_NAME: CloseUp
-        PRODUCT_BUNDLE_IDENTIFIER: com.oomol.CloseUp
-        CLOSEUP_BUNDLE_DISPLAY_NAME: CloseUp
+        PRODUCT_BUNDLE_IDENTIFIER: com.flameeert.CloseUpPlus
+        CLOSEUP_BUNDLE_DISPLAY_NAME: CloseUpPlus
         INFOPLIST_FILE: Sources/CloseUp/Info.plist
         CODE_SIGN_ENTITLEMENTS: Sources/CloseUp/CloseUp.entitlements
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
@@ -99,8 +99,12 @@ targets:
           DEVELOPMENT_TEAM: ""
           ENABLE_HARDENED_RUNTIME: NO
         Release:
-          CODE_SIGN_IDENTITY: "Developer ID Application"
-          DEVELOPMENT_TEAM: PWJ9VF7HHT
+          # Current CloseUpPlus releases ship without an Apple Developer
+          # identity. Xcode still applies the ad-hoc signature required for a
+          # coherent macOS bundle, but the app is not notarized.
+          CODE_SIGN_IDENTITY: "-"
+          DEVELOPMENT_TEAM: ""
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) CLOSEUPPLUS_UNSIGNED_RELEASE"
     postBuildScripts:
       # Sparkle ships as a fat (arm64 + x86_64) xcframework; since we ship
       # single-arch apps, strip the unused slice and re-sign (saves ~1.4 MB).

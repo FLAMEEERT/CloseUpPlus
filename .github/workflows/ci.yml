@@ -44,20 +44,17 @@ jobs:
     name: Build & Test
     needs: gate
     if: needs.gate.outputs.run == 'true'
-    runs-on: blacksmith-6vcpu-macos-latest
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v7
 
       - name: Select Xcode
         run: |
-          if [ -d /Applications/Xcode_26.app ]; then
-            sudo xcode-select -s /Applications/Xcode_26.app
-          fi
+          sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
           xcodebuild -version
 
       - name: Install tools
-        # xcbeautify ships with the macOS runner image; only xcodegen is missing.
-        run: brew install xcodegen
+        run: brew install xcodegen xcbeautify
 
       - name: Generate project
         run: xcodegen generate
@@ -68,19 +65,19 @@ jobs:
           xcodebuild -scheme CloseUp -configuration Debug \
             -derivedDataPath build/DerivedData \
             -destination 'platform=macOS' \
+            ARCHS=x86_64 ONLY_ACTIVE_ARCH=YES \
             -resultBundlePath build/TestResults.xcresult \
             test | xcbeautify
 
-      - name: Universal build check (arm64 + x86_64)
-        # CloseUp ships one universal app; make sure a PR can't land code that
-        # only compiles for the host arch. Build-only — tests already ran above
-        # and Rosetta isn't guaranteed on the runner.
+      - name: Apple Silicon cross-build check
+        # The macos-15 hosted runner is Intel. Tests run natively on x86_64;
+        # separately prove the arm64 product compiles without executing it.
         run: |
           set -o pipefail
           xcodebuild -scheme CloseUp -configuration Release \
             -derivedDataPath build/DerivedData \
             -destination 'generic/platform=macOS' \
-            CODE_SIGNING_ALLOWED=NO \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO \
             build | xcbeautify
 
       - name: Upload test results

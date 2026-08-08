@@ -26,7 +26,6 @@
 # Output (appended to $GITHUB_OUTPUT when set, always echoed):
 #   version=1.2.3[-pre]    display version (MARKETING_VERSION)
 #   tag=v1.2.3[-pre]       git tag / GitHub Release tag
-#   channel=stable|beta    Sparkle channel
 #   prerelease=true|false  GitHub Release pre-release flag (never "Latest")
 set -euo pipefail
 
@@ -66,19 +65,26 @@ release)
             fi
         fi
     else
-        base="$(latest_stable)"
-        base="${base#v}"
-        base="${base:-0.0.0}"
-        IFS=. read -r major minor patch <<<"$base"
-        case "$bump" in
-        major) version="$((major + 1)).0.0" ;;
-        minor) version="${major}.$((minor + 1)).0" ;;
-        patch) version="${major}.${minor}.$((patch + 1))" ;;
-        *)
-            echo "error: unsupported bump '$bump'" >&2
-            exit 1
-            ;;
-        esac
+        base_tag="$(latest_stable)"
+        if [ -n "$base_tag" ] && [ "$(git rev-parse "${base_tag}^{commit}")" = "$(git rev-parse HEAD)" ]; then
+            # A failed publish creates its lightweight tag together with the
+            # draft. Reuse it on a same-commit re-dispatch so the draft can be
+            # completed instead of silently skipping to the next version.
+            version="${base_tag#v}"
+        else
+            base="${base_tag#v}"
+            base="${base:-0.0.0}"
+            IFS=. read -r major minor patch <<<"$base"
+            case "$bump" in
+            major) version="$((major + 1)).0.0" ;;
+            minor) version="${major}.$((minor + 1)).0" ;;
+            patch) version="${major}.${minor}.$((patch + 1))" ;;
+            *)
+                echo "error: unsupported bump '$bump'" >&2
+                exit 1
+                ;;
+            esac
+        fi
     fi
     ;;
 beta)
@@ -102,7 +108,12 @@ beta)
         [[ "$n" =~ ^(0|[1-9][0-9]*)$ ]] || continue
         if ((n > max)); then max="$n"; fi
     done
-    version="${base}-beta.$((max + 1))"
+    latest_beta="v${base}-beta.${max}"
+    if ((max > 0)) && [ "$(git rev-parse "${latest_beta}^{commit}")" = "$(git rev-parse HEAD)" ]; then
+        version="${latest_beta#v}"
+    else
+        version="${base}-beta.$((max + 1))"
+    fi
     ;;
 *)
     echo "error: unknown mode '$mode' (expected release|beta)" >&2
@@ -127,17 +138,10 @@ if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
     fi
 fi
 
-if [[ "$version" == *-* ]]; then
-    channel=beta
-    prerelease=true
-else
-    channel=stable
-    prerelease=false
-fi
+if [[ "$version" == *-* ]]; then prerelease=true; else prerelease=false; fi
 
 out="version=${version}
 tag=${tag}
-channel=${channel}
 prerelease=${prerelease}"
 if [ -n "${GITHUB_OUTPUT:-}" ]; then
     echo "$out" >>"$GITHUB_OUTPUT"

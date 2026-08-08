@@ -6,7 +6,7 @@ import os
 /// a full-screen app), there is nothing on screen to diagnose from. These
 /// loggers narrate the pipeline's lifecycle so a failure can be traced live:
 ///
-///     /usr/bin/log stream --predicate 'subsystem == "com.oomol.CloseUp"' --debug --style compact
+///     /usr/bin/log stream --predicate 'subsystem == "com.flameeert.CloseUpPlus"' --debug --style compact
 ///
 /// (or Console.app filtered on the subsystem). Two tiers: lifecycle events
 /// (`.notice` — session begin/end, observer armed, layout settled) persist to
@@ -17,7 +17,7 @@ import os
 /// `/usr/bin/log` by full path: bare `log` is a zsh builtin. Values are marked
 /// `.public` because none of them are user data.
 public enum Log {
-    public static let subsystem = "com.oomol.CloseUp"
+    public static let subsystem = "com.flameeert.CloseUpPlus"
 
     /// Observer arm/disarm, expose-notification flow, session begin/end, and the
     /// recovery paths (Space change / Dock relaunch re-arm).

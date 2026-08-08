@@ -13,8 +13,10 @@ struct SettingsRootView: View {
             ShortcutsSettingsPane()
                 .tabItem { Label(appState.loc("Shortcuts"), systemImage: "command") }
 
-            UpdatesSettingsPane()
-                .tabItem { Label(appState.loc("Updates"), systemImage: "arrow.down.circle") }
+            #if !CLOSEUPPLUS_UNSIGNED_RELEASE
+                UpdatesSettingsPane()
+                    .tabItem { Label(appState.loc("Updates"), systemImage: "arrow.down.circle") }
+            #endif
 
             AboutPane()
                 .tabItem { Label(appState.loc("About"), systemImage: "info.circle") }

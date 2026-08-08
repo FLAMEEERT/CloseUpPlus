@@ -28,7 +28,7 @@ struct MenuBarView: View {
         }
         .keyboardShortcut(",", modifiers: .command)
 
-        Button(appState.loc("Quit CloseUp")) {
+        Button(appState.loc("Quit CloseUpPlus")) {
             NSApplication.shared.terminate(nil)
         }
         .keyboardShortcut("q", modifiers: .command)

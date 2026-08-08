@@ -8,10 +8,9 @@ name: Release
 # Release is marked pre-release (never "Latest"). The normal beta path is the
 # nightly build (see nightly.yml).
 #
-# Builds signed + notarized + stapled apps (one per architecture), publishes a
-# GitHub Release with each arch's zip (for Sparkle) and a drag-to-install dmg,
-# and appends the EdDSA-signed entry to each arch's appcast on the gh-pages
-# branch. The build itself lives in the reusable build-publish.yml.
+# Builds ad-hoc-signed, non-notarized apps (one per architecture) and publishes
+# a GitHub Release with each arch's zip and drag-to-install dmg. The reusable
+# pipeline creates a draft first and publishes it only after every asset exists.
 on:
   workflow_dispatch:
     inputs:
@@ -26,17 +25,12 @@ on:
         type: choice
         options: [patch, minor, major]
 
-# Serialize against nightly.yml (same group): both publish a tag, a GitHub
-# Release, and the per-arch appcasts on gh-pages. cancel-in-progress: false queues
-# a newly triggered run instead of cancelling the in-flight one; queue: max then
-# keeps EVERY waiting run in line (FIFO, up to 100) — without it GitHub retains
-# only the most-recent pending run and silently cancels any earlier one, so a
-# release could be dropped when the nightly cron fires while another publish is
-# still running.
+# Serialize against nightly.yml. A new publish waits instead of cancelling an
+# in-flight release.
 concurrency:
   group: publish
-  cancel-in-progress: false
   queue: max
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -48,7 +42,6 @@ jobs:
     outputs:
       version: ${{ steps.v.outputs.version }}
       tag: ${{ steps.v.outputs.tag }}
-      channel: ${{ steps.v.outputs.channel }}
       prerelease: ${{ steps.v.outputs.prerelease }}
     steps:
       - uses: actions/checkout@v7
@@ -68,6 +61,4 @@ jobs:
     with:
       version: ${{ needs.version.outputs.version }}
       tag: ${{ needs.version.outputs.tag }}
-      channel: ${{ needs.version.outputs.channel }}
       prerelease: ${{ needs.version.outputs.prerelease == 'true' }}
-    secrets: inherit

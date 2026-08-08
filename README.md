@@ -1,20 +1,20 @@
 <div align="center">
 
-<img src="docs/images/appicon.png" alt="CloseUp" width="128">
+<img src="docs/images/appicon.png" alt="CloseUpPlus" width="128">
 
-# CloseUp
+# CloseUpPlus
 
 **English** · [简体中文](docs/README/README.zh-CN.md) · [繁體中文](docs/README/README.zh-TW.md) · [日本語](docs/README/README.ja.md) · [Français](docs/README/README.fr.md) · [Deutsch](docs/README/README.de.md) · [Español](docs/README/README.es.md) · [Português](docs/README/README.pt-BR.md) · [Русский](docs/README/README.ru.md)
 
-[![Latest release](https://img.shields.io/github/v/release/oomol-lab/CloseUp?sort=semver&color=266BED)](https://github.com/oomol-lab/CloseUp/releases/latest)
-[![CI](https://img.shields.io/github/actions/workflow/status/oomol-lab/CloseUp/ci.yml?branch=main&label=CI)](https://github.com/oomol-lab/CloseUp/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/FLAMEEERT/CloseUpPlus?sort=semver&color=266BED)](https://github.com/FLAMEEERT/CloseUpPlus/releases/latest)
+[![CI](https://img.shields.io/github/actions/workflow/status/FLAMEEERT/CloseUpPlus/ci.yml?branch=main&label=CI)](https://github.com/FLAMEEERT/CloseUpPlus/actions/workflows/ci.yml)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-266BED)](LICENSE)
 [![macOS 14+](https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white)](https://www.apple.com/macos/)
 [![Swift 6.0](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)](https://swift.org)
 
 </div>
 
-**Put the controls back in Mission Control.** CloseUp overlays window controls
+**Put the controls back in Mission Control.** CloseUpPlus overlays window controls
 onto the native macOS Mission Control — close, minimize, maximize, hide, or
 quit any window without leaving the overview — and adds full keyboard control.
 Free, native, and open source.
@@ -54,18 +54,18 @@ Free, native, and open source.
   Español, Português, Русский, switchable in-app and applied live.
 - **Native and unobtrusive** — a passive overlay that never steals Mission
   Control's own keyboard handling; menu-bar only, no Dock icon.
-- **Auto-updating** — signed, notarized releases via Sparkle, with an optional
-  Beta channel.
+- **Interactive Pin** — pin a selected window from Mission Control, keep its
+  live view above other apps, and interact with the real source on pointer entry.
 
-## How CloseUp compares
+## How CloseUpPlus compares
 
-CloseUp focuses on one thing — acting on windows directly inside the *native*
+CloseUpPlus focuses on one thing — acting on windows directly inside the *native*
 Mission Control view. Here's how it stacks up against the closest
 alternatives that do the same (verified 2026-07-02 against each project's own
 site/repo — see the links for sources; fields the vendor doesn't document are
 marked "Not documented" rather than guessed):
 
-| | CloseUp | [Mission Control Close](https://missioncontrolclose.com/) | [Open Mission Control](https://github.com/nohackjustnoobb/OpenMissionControl) | [Mission Control Plus](https://www.fadel.io/missioncontrolplus) |
+| | CloseUpPlus | [Mission Control Close](https://missioncontrolclose.com/) | [Open Mission Control](https://github.com/nohackjustnoobb/OpenMissionControl) | [Mission Control Plus](https://www.fadel.io/missioncontrolplus) |
 |---|---|---|---|---|
 | Price | Free | £5 one-time (7-day trial) | Free | Paid, price not published (10-day trial) |
 | License | Open source (GPL-3.0) | Closed source | Open source (GPL-3.0) | Closed source |
@@ -74,8 +74,8 @@ marked "Not documented" rather than guessed):
 | Remappable keyboard shortcuts | Every action | Has shortcuts; remapping not documented | Fixed (⌘Q/⌘W/⌘M/⌘F) | Fixed (⌘W/⌘M/⌘Q/⏎) |
 | Localization | 9 languages, switchable in-app | Not documented | Not documented | Not documented |
 | macOS requirement | 14.0+ | 26.0 (Tahoe)+ | Not documented | 10.13+ |
-| CPU architecture | Apple Silicon & Intel, separate signed builds | Apple Silicon only | Not documented | Not documented |
-| Distribution | Direct download + Homebrew, notarized, Sparkle auto-update | Direct download, LemonSqueezy checkout | GitHub + Homebrew (unsigned — you remove the quarantine flag manually) | Direct download |
+| CPU architecture | Apple Silicon & Intel, separate builds | Apple Silicon only | Not documented | Not documented |
+| Distribution | GitHub Releases (ad-hoc signed, not notarized) | Direct download, LemonSqueezy checkout | GitHub + Homebrew (unsigned — you remove the quarantine flag manually) | Direct download |
 
 Other macOS window-management tools — [AltTab](https://github.com/lwouis/alt-tab-macos),
 [DockDoor](https://github.com/ejbills/DockDoor), [HyperDock](https://bahoom.com/hyperdock),
@@ -87,24 +87,26 @@ and aren't scored above.
 ## Requirements
 
 - macOS 14.0 or later
-- Apple Silicon (arm64) or Intel (x86_64) — CloseUp ships a separate,
+- Apple Silicon (arm64) or Intel (x86_64) — CloseUpPlus ships a separate,
   single-architecture build for each; grab the one matching your Mac
-- Accessibility permission (CloseUp reads and acts on windows through the
-  Accessibility API; it never records your screen)
+- Accessibility permission (CloseUpPlus reads and acts on windows through the
+  Accessibility API)
+- Screen Recording permission only when using Pin; selected-window frames stay
+  local and are never recorded to disk or uploaded
 
 ## Install
 
 Download the release matching your Mac's chip from
-[Releases](https://github.com/oomol-lab/CloseUp/releases) — `CloseUp-*-arm64.dmg`
-for Apple Silicon, `CloseUp-*-x86_64.dmg` for Intel — open it, and drag CloseUp
-to Applications. Or install via Homebrew (auto-detects your architecture):
+[Releases](https://github.com/FLAMEEERT/CloseUpPlus/releases) — `CloseUpPlus-*-arm64.dmg`
+for Apple Silicon, `CloseUpPlus-*-x86_64.dmg` for Intel — open it, and drag CloseUpPlus
+to Applications.
 
-```bash
-brew install --cask oomol-lab/tap/closeup
-```
+Current CloseUpPlus releases are not Apple-notarized. On first launch, right-click the app
+and choose **Open**. If macOS still blocks it, use System Settings → Privacy &
+Security → **Open Anyway**.
 
 On first launch, grant Accessibility access in System Settings → Privacy &
-Security → Accessibility — CloseUp opens the right pane for you.
+Security → Accessibility — CloseUpPlus opens the right pane for you.
 
 ## Usage
 
@@ -123,7 +125,7 @@ keyboard:
 | Minimize all windows | ⌥⌘M | all windows |
 | Hide all but this | ⌥⌘H | every app except the one under the pointer |
 
-Every shortcut is remappable in Settings → Shortcuts. Toggle CloseUp on or off
+Every shortcut is remappable in Settings → Shortcuts. Toggle CloseUpPlus on or off
 anytime from the menu-bar icon or Settings → General.
 
 ## Settings
@@ -132,8 +134,6 @@ anytime from the menu-bar icon or Settings → General.
   Accessibility status with a one-click grant, which control buttons appear,
   and the in-app language.
 - **Shortcuts** — remap every action.
-- **Updates** — automatic checks (Stable or Beta channel) and a manual "Check
-  for Updates".
 - **About** — version, license, a link to the GitHub repo, and
   acknowledgements.
 
@@ -161,6 +161,6 @@ in. See [docs/DESIGN.md](docs/DESIGN.md) for the architecture and
 
 Thanks to [OpenMissionControl](https://github.com/nohackjustnoobb/OpenMissionControl),
 [DockDoor](https://github.com/ejbills/DockDoor), and
-[alt-tab-macos](https://github.com/lwouis/alt-tab-macos): CloseUp's
+[alt-tab-macos](https://github.com/lwouis/alt-tab-macos): CloseUpPlus's
 use of the private Mission Control APIs is informed by how these projects use
 them.

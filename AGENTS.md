@@ -150,12 +150,12 @@ behaviour (live `CGWindowList` / AX inspection) and the official headers.
   `sessionActive` bool → begin / resync / end; a repeat-open re-syncs, never
   stacks a second set of timers/tap. (The old `MissionControlSession` reducer is
   gone — the poll + bool is the authority.)
-- **Diagnose live via `Log` (os.Logger, subsystem `com.oomol.CloseUp`) — capture
+- **Diagnose live via `Log` (os.Logger, subsystem `com.flameeert.CloseUpPlus`) — capture
   with `/usr/bin/log` BY FULL PATH.** In zsh, bare `log` is a SHELL BUILTIN (the
   csh-compat watch-list printer), so `log stream …` dies with `too many arguments`
   and silently captures zero lines — the real cause of the "app emits no logs"
   trap (it is NOT word-splitting). Use, from a script file:
-  `/usr/bin/log stream --predicate 'subsystem == "com.oomol.CloseUp"' --info --style compact`.
+  `/usr/bin/log stream --predicate 'subsystem == "com.flameeert.CloseUpPlus"' --info --style compact`.
 - **Field diagnosis of "no lights" reports (no repro machine needed):**
   `scripts/diagnose-mission-control.sh` runs zero-dependency on the affected
   machine (CGWindowList via the JXA ObjC bridge — NB `ObjC.deepUnwrap` needs

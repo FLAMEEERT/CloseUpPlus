@@ -1,9 +1,9 @@
 #!/bin/bash
-# CloseUp field diagnostic — "no overlay icons in Mission Control".
+# CloseUpPlus field diagnostic — "no overlay icons in Mission Control".
 #
 # Zero dependencies: runs on a stock macOS install (JXA + /usr/bin/log only).
 # It captures WHERE the Dock draws Mission Control's surfaces (window layers)
-# and CloseUp's own live debug log during one manual reproduction, then writes
+# and CloseUpPlus's own live debug log during one manual reproduction, then writes
 # a single report file to send back to the developers.
 #
 # Usage:
@@ -44,7 +44,7 @@ function run() {
 EOF
 dump_windows() { osascript -l JavaScript "$WORK/dump.js" 2>>"$OUT"; }
 
-say "CloseUp Mission Control diagnostic → $OUT"
+say "CloseUpPlus Mission Control diagnostic → $OUT"
 say ""
 
 # --- 1. System / app info ----------------------------------------------------
@@ -53,7 +53,7 @@ section "SYSTEM"
 { sw_vers; echo "arch: $(uname -m)"; echo "date: $(date -u '+%Y-%m-%d %H:%M:%SZ')"; } >> "$OUT" 2>&1
 
 section "CLOSEUP APP"
-APP="/Applications/CloseUp.app"
+APP="/Applications/CloseUpPlus.app"
 if [ -d "$APP" ]; then
     {
         echo "version: $(plutil -extract CFBundleShortVersionString raw "$APP/Contents/Info.plist" 2>/dev/null) ($(plutil -extract CFBundleVersion raw "$APP/Contents/Info.plist" 2>/dev/null))"
@@ -62,10 +62,10 @@ if [ -d "$APP" ]; then
 else
     echo "NOT FOUND at $APP" >> "$OUT"
 fi
-RUNNING="$(pgrep -x CloseUp || true)"
+RUNNING="$(pgrep -x CloseUpPlus || true)"
 echo "running pid: ${RUNNING:-NOT RUNNING}" >> "$OUT"
 if [ -z "$RUNNING" ]; then
-    say "⚠️  CloseUp is not running — start it (and enable it) first, then re-run."
+    say "⚠️  CloseUpPlus is not running — start it (and enable it) first, then re-run."
 fi
 DOCK_PID="$(pgrep -x Dock || true)"
 WM_PID="$(pgrep -x WindowManager || true)"
@@ -131,11 +131,11 @@ section "ANALYSIS: verdicts"
     fi
 } >> "$OUT"
 
-# --- 3. Live CloseUp log during one manual reproduction ----------------------
+# --- 3. Live CloseUpPlus log during one manual reproduction ------------------
 LOGWIN=30
 [ "$AUTO" = "1" ] && LOGWIN=5
 section "LIVE LOG (debug) during manual reproduction, ${LOGWIN}s"
-/usr/bin/log stream --predicate 'subsystem == "com.oomol.CloseUp"' --debug --style compact > "$WORK/live.log" 2>&1 &
+/usr/bin/log stream --predicate 'subsystem == "com.flameeert.CloseUpPlus"' --debug --style compact > "$WORK/live.log" 2>&1 &
 LOGPID=$!
 say ""
 say "Live log capture started — you have ${LOGWIN} seconds. Please now:"
@@ -147,13 +147,13 @@ sleep "$LOGWIN"
 # normal teardown and flushes any pending output before exiting; `wait` then reaps it.
 kill -INT "$LOGPID" 2>/dev/null; wait "$LOGPID" 2>/dev/null
 cat "$WORK/live.log" >> "$OUT"
-if ! grep -q "com.oomol.CloseUp:" "$WORK/live.log"; then
-    echo "(no live CloseUp log lines captured — is CloseUp running and enabled? was Mission Control opened during the window?)" >> "$OUT"
+if ! grep -q "com.flameeert.CloseUpPlus:" "$WORK/live.log"; then
+    echo "(no live CloseUpPlus log lines captured — is CloseUpPlus running and enabled? was Mission Control opened during the window?)" >> "$OUT"
 fi
 
 # --- 4. Persisted notice-level history (covers reproductions before this run)
 section "PERSISTED LOG (last 30 min, notice+)"
-/usr/bin/log show --last 30m --predicate 'subsystem == "com.oomol.CloseUp"' --info --style compact >> "$OUT" 2>&1
+/usr/bin/log show --last 30m --predicate 'subsystem == "com.flameeert.CloseUpPlus"' --info --style compact >> "$OUT" 2>&1
 
 say ""
 say "Done. Please send this file back:"

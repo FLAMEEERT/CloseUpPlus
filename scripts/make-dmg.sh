@@ -6,9 +6,9 @@
 # (hdiutil only) so it behaves identically on a developer's machine and on the CI
 # runners, which install nothing beyond xcodegen.
 #
-# Signing and notarization are deliberately NOT done here: CI signs and notarizes
-# the resulting image as separate, auditable steps (see release.yml), and local
-# `make dmg` needs neither.
+# Signing and notarization are deliberately NOT done here. The current release
+# pipeline packages an ad-hoc-signed app without Apple notarization, and local
+# `make dmg` uses the same dependency-free image builder.
 #
 #   make-dmg.sh <app-path> <output-dmg> [volume-name]
 set -euo pipefail
@@ -37,8 +37,8 @@ rm -f "$OUT"
 # the host macOS version, never the contained app's CPU arch. CloseUp ships one
 # app per architecture, so each image carries a single-arch app — but ULFO
 # mounts on every macOS >= 10.11 (our floor is 14.0) regardless. The .dmg is the
-# manual-download convenience only — Sparkle updates ship the zip (see
-# docs/RUNBOOK.md) — and CI signs/notarizes/staples it afterward.
+# manual-download convenience; the zip is published alongside it for users who
+# prefer an archive.
 hdiutil create \
 	-volname "$VOL" \
 	-srcfolder "$STAGE" \

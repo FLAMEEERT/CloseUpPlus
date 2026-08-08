@@ -2,11 +2,10 @@ import CloseUpKit
 import Sparkle
 import SwiftUI
 
-/// Wraps Sparkle's standard updater. Release builds start the updater against
-/// the EdDSA-signed appcast in `Info.plist` (whose `SUPublicEDKey` must be a real
-/// ed25519 key, or Sparkle refuses to start the updater). Debug builds never
-/// start it (`startingUpdater: false`), so the update UI stays inert and no check
-/// is ever scheduled regardless of the feed/key state.
+/// Wraps Sparkle's standard updater. Debug and unsigned CloseUpPlus releases
+/// keep it inert: without a dedicated EdDSA key and notarized distribution
+/// chain, presenting an automatic updater would make a security promise the
+/// release cannot satisfy.
 @MainActor
 final class UpdateController {
     private let controller: SPUStandardUpdaterController
@@ -14,7 +13,7 @@ final class UpdateController {
     private let updaterDelegate = UpdaterDelegate()
 
     init() {
-        #if DEBUG
+        #if DEBUG || CLOSEUPPLUS_UNSIGNED_RELEASE
         started = false
         #else
         started = true
@@ -64,18 +63,17 @@ final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
         return UpdateChannel.allowedChannels(for: .from(usesBeta: usesBeta))
     }
 
-    /// Each architecture is its own product with its own feed — CloseUp ships
+    /// Each architecture is its own product with its own feed — CloseUpPlus ships
     /// single-arch apps and does NOT support cross-arch updates — so the feed is
     /// pinned at COMPILE time, where no build/CI misconfiguration can reach it:
     /// an x86_64 binary can only ever see x86_64 updates, arm64 only arm64. Both
-    /// arches resolve explicitly (no Info.plist fallback); the feeds are
-    /// symmetric and there is intentionally no compatibility with the universal
-    /// 0.1.0 (its old `appcast.xml` is left orphaned — see docs/RUNBOOK.md §5).
+    /// arches resolve explicitly (no Info.plist fallback); update URLs stay
+    /// architecture-specific for a future signed feed.
     func feedURLString(for updater: SPUUpdater) -> String? {
         #if arch(x86_64)
-        return "https://oomol-lab.github.io/CloseUp/appcast-x86_64.xml"
+        return "https://flameeert.github.io/CloseUpPlus/appcast-x86_64.xml"
         #else
-        return "https://oomol-lab.github.io/CloseUp/appcast-arm64.xml"
+        return "https://flameeert.github.io/CloseUpPlus/appcast-arm64.xml"
         #endif
     }
 }

@@ -9,7 +9,7 @@ DERIVED     := build/DerivedData
 ifeq ($(CONFIG),Debug)
 APP_NAME    := CloseUp Dev
 else
-APP_NAME    := CloseUp
+APP_NAME    := CloseUpPlus
 endif
 # arm64 uses a concrete destination so ONLY_ACTIVE_ARCH can pin the host slice;
 # any other arch cross-builds via the generic destination with ARCHS forced.
@@ -22,7 +22,7 @@ DEST        := generic/platform=macOS
 ARCHFLAGS   := ARCHS=$(ARCH) ONLY_ACTIVE_ARCH=NO
 endif
 APP         := $(DERIVED)/Build/Products/$(CONFIG)/$(APP_NAME).app
-DMG         := build/dmg/CloseUp.dmg
+DMG         := build/dmg/$(APP_NAME).dmg
 XCB         := set -o pipefail && xcodebuild
 PRETTY      := | xcbeautify
 
@@ -74,15 +74,15 @@ test: gen
 	$(XCB) -scheme $(SCHEME) -configuration $(CONFIG) \
 		-derivedDataPath $(DERIVED) -destination 'platform=macOS' test $(PRETTY)
 
-## Build a Release archive (Developer ID; ARCH=x86_64 for the Intel archive)
+## Build an ad-hoc-signed Release archive (ARCH=x86_64 for the Intel archive)
 archive: gen
 	$(XCB) -scheme $(SCHEME) -configuration Release \
 		-derivedDataPath $(DERIVED) -destination 'generic/platform=macOS' \
-		-archivePath build/CloseUp-$(ARCH).xcarchive \
+		-archivePath build/CloseUpPlus-$(ARCH).xcarchive \
 		$(ARCHFLAGS) archive $(PRETTY)
 
 ## Package the built app into a drag-to-install .dmg (CONFIG=Release for a
-## release-config bundle; the image is unsigned/unnotarized — CI handles that)
+## release-config bundle; the image is not Developer-ID signed or notarized)
 dmg: build
 	scripts/make-dmg.sh "$(APP)" "$(DMG)"
 

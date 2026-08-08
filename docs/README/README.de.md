@@ -1,8 +1,8 @@
-# CloseUp
+# CloseUpPlus
 
 [English](../../README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [Français](README.fr.md) · **Deutsch** · [Español](README.es.md) · [Português](README.pt-BR.md) · [Русский](README.ru.md)
 
-**Bringen Sie die Steuerelemente zurück in Mission Control.** CloseUp blendet
+**Bringen Sie die Steuerelemente zurück in Mission Control.** CloseUpPlus blendet
 Fenstersteuerungen in das native macOS Mission Control ein — schließen,
 im Dock ablegen, maximieren, ausblenden oder beenden Sie ein beliebiges Fenster,
 ohne die Übersicht zu verlassen — und ergänzt sie um vollständige
@@ -48,19 +48,19 @@ Tastatursteuerung. Kostenlos, nativ und quelloffen.
 - **Nativ und unaufdringlich** — ein passives Overlay, das Mission Control nie
   die eigene Tastaturverarbeitung entzieht; nur in der Menüleiste, kein
   Dock-Symbol.
-- **Automatische Updates** — signierte, notarisierte Versionen über Sparkle, mit
-  optionalem Beta-Kanal.
+- **Interaktives Anheften** — ein Fenster aus Mission Control anheften und beim
+  Hineinbewegen des Zeigers mit dem echten Fenster interagieren.
 
 ## Im Vergleich
 
-CloseUp konzentriert sich auf eine Sache — Fenster direkt in der **nativen**
+CloseUpPlus konzentriert sich auf eine Sache — Fenster direkt in der **nativen**
 Mission-Control-Ansicht zu bedienen. So schneidet es im Vergleich zu den
 nächstliegenden Alternativen ab, die dasselbe tun (Stand 2026-07-02, geprüft
 anhand der jeweiligen offiziellen Website/Repo — Quellen siehe Links; vom
 Anbieter nicht dokumentierte Felder sind als „nicht dokumentiert" markiert
 statt geraten):
 
-| | CloseUp | [Mission Control Close](https://missioncontrolclose.com/) | [Open Mission Control](https://github.com/nohackjustnoobb/OpenMissionControl) | [Mission Control Plus](https://www.fadel.io/missioncontrolplus) |
+| | CloseUpPlus | [Mission Control Close](https://missioncontrolclose.com/) | [Open Mission Control](https://github.com/nohackjustnoobb/OpenMissionControl) | [Mission Control Plus](https://www.fadel.io/missioncontrolplus) |
 |---|---|---|---|---|
 | Preis | Kostenlos | 5 £ einmalig (7 Tage Testphase) | Kostenlos | Kostenpflichtig, Preis nicht veröffentlicht (10 Tage Testphase) |
 | Lizenz | Open Source (GPL-3.0) | Closed Source | Open Source (GPL-3.0) | Closed Source |
@@ -69,35 +69,33 @@ statt geraten):
 | Neu belegbare Tastenkürzel | Jede Aktion | Hat Tastenkürzel; Neubelegung nicht dokumentiert | Fest (⌘Q/⌘W/⌘M/⌘F) | Fest (⌘W/⌘M/⌘Q/⏎) |
 | Lokalisierung | 9 Sprachen, in der App umschaltbar | Nicht dokumentiert | Nicht dokumentiert | Nicht dokumentiert |
 | Erforderliches macOS | 14.0+ | 26.0 (Tahoe)+ | Nicht dokumentiert | 10.13+ |
-| CPU-Architektur | Apple Silicon & Intel, getrennt signierte Builds | Nur Apple Silicon | Nicht dokumentiert | Nicht dokumentiert |
-| Vertrieb | Direkter Download + Homebrew, notarisiert, automatisches Update über Sparkle | Direkter Download, Checkout über LemonSqueezy | GitHub + Homebrew (unsigniert — Quarantäne-Flag muss manuell entfernt werden) | Direkter Download |
+| CPU-Architektur | Apple Silicon & Intel, getrennte Builds | Nur Apple Silicon | Nicht dokumentiert | Nicht dokumentiert |
+| Vertrieb | GitHub Releases (Ad-hoc-Signatur, nicht von Apple notarisiert) | Direkter Download, Checkout über LemonSqueezy | GitHub + Homebrew (unsigniert — Quarantäne-Flag muss manuell entfernt werden) | Direkter Download |
 
 Andere macOS-Fenstermanagement-Tools — [AltTab](https://github.com/lwouis/alt-tab-macos), [DockDoor](https://github.com/ejbills/DockDoor), [HyperDock](https://bahoom.com/hyperdock), [Contexts](https://contexts.co/) — bieten verwandte Fensteraktionen (Schließen, Ausblenden, Wechseln), allerdings über eine eigene Switcher- oder Dock-Hover-Oberfläche statt der nativen Mission-Control-Ansicht. Sie lösen also ein verwandtes, aber anderes Problem und sind daher nicht in der obigen Tabelle enthalten.
 
 ## Systemvoraussetzungen
 
 - macOS 14.0 oder neuer
-- Apple Silicon (arm64) oder Intel (x86_64) — CloseUp liefert für jede
-  Architektur einen separat signierten Build; laden Sie den zu Ihrem Mac
-  passenden herunter
-- Bedienungshilfen-Berechtigung (CloseUp liest Fenster über die
-  Bedienungshilfen-API aus und wirkt darüber auf sie ein; es zeichnet niemals
-  Ihren Bildschirm auf)
+- Apple Silicon (arm64) oder Intel (x86_64) — CloseUpPlus liefert für jede
+  Architektur einen separaten Build; laden Sie den zu Ihrem Mac passenden herunter
+- Bedienungshilfen-Berechtigung (CloseUpPlus liest Fenster über die
+  Bedienungshilfen-API aus und wirkt darüber auf sie ein)
+- Bildschirmaufnahme nur für Pin; das ausgewählte Fenster bleibt lokal und wird
+  weder gespeichert noch hochgeladen
 
 ## Installation
 
 Laden Sie die zu Ihrem Mac-Chip passende Version von
-[Releases](https://github.com/oomol-lab/CloseUp/releases) herunter —
-`CloseUp-*-arm64.dmg` für Apple Silicon, `CloseUp-*-x86_64.dmg` für Intel —,
-öffnen Sie sie und ziehen Sie CloseUp in den Programme-Ordner. Alternativ per
-Homebrew installieren (die Architektur wird automatisch erkannt):
-
-```bash
-brew install --cask oomol-lab/tap/closeup
-```
+[Releases](https://github.com/FLAMEEERT/CloseUpPlus/releases) herunter —
+`CloseUpPlus-*-arm64.dmg` für Apple Silicon, `CloseUpPlus-*-x86_64.dmg` für Intel —,
+öffnen Sie sie und ziehen Sie CloseUpPlus in den Programme-Ordner. Dieser Build
+ist nicht von Apple notarisiert. Klicken Sie beim ersten Start mit der rechten
+Maustaste auf die App und wählen Sie **Öffnen**, oder erlauben Sie sie unter
+Systemeinstellungen → Datenschutz & Sicherheit.
 
 Erteilen Sie beim ersten Start den Zugriff auf die Bedienungshilfen unter
-Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen — CloseUp
+Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen — CloseUpPlus
 öffnet den richtigen Bereich für Sie.
 
 ## Verwendung
@@ -118,7 +116,7 @@ die Tastatur:
 | Alle Fenster im Dock ablegen | ⌥⌘M | alle Fenster |
 | Alle bis auf dieses ausblenden | ⌥⌘H | jede App außer der unter dem Zeiger |
 
-Jedes Tastenkürzel ist unter Einstellungen → Tastenkürzel neu belegbar. CloseUp
+Jedes Tastenkürzel ist unter Einstellungen → Tastenkürzel neu belegbar. CloseUpPlus
 lässt sich jederzeit über das Menüleistensymbol oder Einstellungen → Allgemein
 ein- oder ausschalten.
 
@@ -128,8 +126,6 @@ ein- oder ausschalten.
   ausblenden, Status der Bedienungshilfen mit Erteilung per Klick, welche
   Steuerschaltflächen erscheinen, und die App-Sprache.
 - **Tastenkürzel** — jede Aktion neu belegen.
-- **Updates** — automatische Prüfungen (Stabil- oder Beta-Kanal) und ein
-  manuelles „Nach Updates suchen“.
 - **Info** — Version, Lizenz, Link zum GitHub-Repo und Danksagungen.
 
 ## Aus dem Quellcode erstellen
@@ -157,5 +153,5 @@ eingecheckt. Siehe [../DESIGN.md](../DESIGN.md) für die Architektur und
 Dank an [OpenMissionControl](https://github.com/nohackjustnoobb/OpenMissionControl),
 [DockDoor](https://github.com/ejbills/DockDoor) und
 [alt-tab-macos](https://github.com/lwouis/alt-tab-macos): Die
-Art, wie CloseUp die privaten Mission-Control-APIs verwendet, orientiert sich
+Art, wie CloseUpPlus die privaten Mission-Control-APIs verwendet, orientiert sich
 daran, wie diese Projekte sie nutzen.
