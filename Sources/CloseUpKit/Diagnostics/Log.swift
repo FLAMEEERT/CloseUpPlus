@@ -28,4 +28,9 @@ public enum Log {
 
     /// App-shell lifecycle: reopen handling, Settings-window presentation.
     public static let app = Logger(subsystem: subsystem, category: "app")
+
+    /// ScreenCaptureKit permission, exact-source resolution, stream lifecycle,
+    /// semantic dimensions, and configuration revisions. Never log pixels,
+    /// titles, frame payloads, or raw error messages here.
+    public static let pinning = Logger(subsystem: subsystem, category: "pinning")
 }

@@ -276,6 +276,130 @@ public final class AccessibilityCapabilityResolver: WindowCapabilityResolving {
     }
 }
 
+/// Hands a passive mirror off to one exact interactive source window.
+///
+/// The application is activated only when it is not already frontmost. The
+/// final raise always targets the AX window matched by `CGWindowID`, so an app
+/// with several windows cannot be raised as an undifferentiated group.
+@MainActor
+public final class AccessibilitySourceWindowActivator: SourceWindowActivating {
+    public init() {}
+
+    public func activate(
+        source: WindowInfo,
+        positionedAt targetFrame: CGRect
+    ) -> SourceWindowActivationResult {
+        guard AXIsProcessTrusted() else {
+            Log.pinning.notice(
+                "source activation unavailable window=\(source.windowID, privacy: .public) pid=\(source.ownerPID, privacy: .public)"
+            )
+            return .accessibilityUnavailable
+        }
+
+        guard let application = NSRunningApplication(
+            processIdentifier: source.ownerPID
+        ) else {
+            Log.pinning.notice(
+                "source activation missing app window=\(source.windowID, privacy: .public) pid=\(source.ownerPID, privacy: .public)"
+            )
+            return .sourceUnavailable
+        }
+
+        let applicationElement = AXUIElementCreateApplication(source.ownerPID)
+        guard let window = applicationElement.axWindow(matching: source.windowID) else {
+            Log.pinning.notice(
+                "source activation missing AX window=\(source.windowID, privacy: .public) pid=\(source.ownerPID, privacy: .public)"
+            )
+            return .sourceUnavailable
+        }
+
+        guard Self.isValid(targetFrame) else { return .sourceUnavailable }
+
+        var positionSettable: DarwinBoolean = false
+        var sizeSettable: DarwinBoolean = false
+        guard AXUIElementIsAttributeSettable(
+            window,
+            kAXPositionAttribute as CFString,
+            &positionSettable
+        ) == .success, positionSettable.boolValue else {
+            return .windowMoveFailed
+        }
+        guard AXUIElementIsAttributeSettable(
+            window,
+            kAXSizeAttribute as CFString,
+            &sizeSettable
+        ) == .success, sizeSettable.boolValue else {
+            return .windowResizeFailed
+        }
+
+        var point = targetFrame.origin
+        guard let positionValue = AXValueCreate(.cgPoint, &point),
+              AXUIElementSetAttributeValue(
+                  window,
+                  kAXPositionAttribute as CFString,
+                  positionValue
+              ) == .success
+        else {
+            Log.pinning.notice(
+                "source handoff move failed window=\(source.windowID, privacy: .public) pid=\(source.ownerPID, privacy: .public)"
+            )
+            return .windowMoveFailed
+        }
+
+        var size = targetFrame.size
+        guard let sizeValue = AXValueCreate(.cgSize, &size),
+              AXUIElementSetAttributeValue(
+                  window,
+                  kAXSizeAttribute as CFString,
+                  sizeValue
+              ) == .success
+        else {
+            Log.pinning.notice(
+                "source handoff resize failed window=\(source.windowID, privacy: .public) pid=\(source.ownerPID, privacy: .public)"
+            )
+            return .windowResizeFailed
+        }
+
+        if NSWorkspace.shared.frontmostApplication?.processIdentifier != source.ownerPID,
+           !application.activate(options: []) {
+            Log.pinning.notice(
+                "source activation app failed window=\(source.windowID, privacy: .public) pid=\(source.ownerPID, privacy: .public)"
+            )
+            return .applicationActivationFailed
+        }
+
+        guard AXUIElementPerformAction(window, kAXRaiseAction as CFString) == .success else {
+            Log.pinning.notice(
+                "source activation raise failed window=\(source.windowID, privacy: .public) pid=\(source.ownerPID, privacy: .public)"
+            )
+            return .windowRaiseFailed
+        }
+
+        return .activated
+    }
+
+    public func currentFrame(source: WindowInfo) -> CGRect? {
+        guard let entries = CGWindowListCopyWindowInfo(
+            [.optionIncludingWindow],
+            source.windowID
+        ) as? [[String: Any]],
+        let current = entries.compactMap(WindowInfo.init(cgEntry:)).first(where: {
+            $0.windowID == source.windowID && $0.ownerPID == source.ownerPID
+        }), Self.isValid(current.frame)
+        else { return nil }
+        return current.frame
+    }
+
+    private static func isValid(_ frame: CGRect) -> Bool {
+        frame.origin.x.isFinite
+            && frame.origin.y.isFinite
+            && frame.width.isFinite
+            && frame.height.isFinite
+            && frame.width > 1
+            && frame.height > 1
+    }
+}
+
 /// Performs a `WindowAction` on a real window identified by its `WindowInfo`.
 @MainActor
 public protocol WindowActionPerforming {

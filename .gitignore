@@ -23,5 +23,10 @@ xcuserdata/
 # Coverage artifacts.
 *.profraw
 
-# Claude Code: local agent state (memory, worktrees, caches, transcripts) — never committed.
+# Local agent state (memory, worktrees, caches, transcripts) — never committed.
 .claude/
+.codex/
+.cursor/
+
+# Local implementation plans and intermediate working notes.
+docs/plans/

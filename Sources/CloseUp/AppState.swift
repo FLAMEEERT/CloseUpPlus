@@ -1,7 +1,20 @@
+import AppKit
 import ApplicationServices
 import CloseUpKit
+import CoreGraphics
 import PermissionFlow
 import SwiftUI
+
+/// Catalog-backed status families for the Screen Recording row. The enum keeps
+/// framework outcomes out of the view while the view resolves the final copy
+/// through `AppState.loc(...)` in the selected in-app language.
+enum ScreenCapturePermissionMessage: Equatable {
+    case authorized
+    case setup
+    case denied
+    case needsRetry
+    case revoked
+}
 
 /// The single shared, observable source of truth for the app shell: the chosen
 /// language (and everything derived from it) plus the master on/off state of the
@@ -17,6 +30,7 @@ final class AppState {
     var languagePreference: LanguagePreference {
         didSet {
             languagePreference.save()
+            pinManager.setLanguage(language)
             applyLanguage()
         }
     }
@@ -76,6 +90,31 @@ final class AppState {
     /// The Mission Control overlay engine, alive only while enabled.
     private var engine: MissionControlEngine?
 
+    /// Runtime-only multi-session Pin ownership. This manager is independent
+    /// from Mission Control's transient session teardown; U6 reads its
+    /// synchronous snapshots and calls its explicit visibility hook.
+    @ObservationIgnored
+    let pinManager = PinManager()
+
+    /// Synchronous U6 snapshot of CloseUp-owned mirror panel window IDs.
+    var pinnedMirrorWindowIDs: Set<CGWindowID> {
+        pinManager.pinnedPanelWindowIDs
+    }
+
+    func pinState(for windowID: CGWindowID, ownerPID: pid_t) -> OverlayPinState {
+        pinManager.pinState(for: windowID, ownerPID: ownerPID)
+    }
+
+    func togglePin(for source: WindowInfo) {
+        pinManager.toggle(source: source)
+    }
+
+    /// Mission Control presentation is orthogonal to Pin ownership. Hiding
+    /// panels here does not stop streams or invalidate their generations.
+    func setMissionControlVisible(_ visible: Bool) {
+        pinManager.setMissionControlVisible(visible)
+    }
+
     // MARK: - Launch at login
 
     @ObservationIgnored
@@ -116,6 +155,20 @@ final class AppState {
     @ObservationIgnored
     private let accessibilityWatcher = AccessibilityGrantWatcher()
 
+    /// Screen Recording is an independent Pin-only capability. Preflight is
+    /// safe to call from status refreshes; only `requestScreenCaptureAccess()`
+    /// can invoke the prompting Core Graphics API.
+    private(set) var screenCapturePermissionStatus: ScreenCapturePermissionStatus = .notGranted
+    private(set) var screenCapturePermissionOutcome: ScreenCapturePermissionOutcome?
+    private(set) var screenCapturePermissionMessage: ScreenCapturePermissionMessage = .setup
+    private(set) var screenCapturePermissionRequestInFlight = false
+
+    @ObservationIgnored
+    private var applicationActivationObserver: NSObjectProtocol?
+
+    @ObservationIgnored
+    private var lastObservedPinPermissionOutcome: ScreenCapturePermissionOutcome?
+
     // MARK: - Updates
 
     /// Sparkle-backed auto-update controller (inert in Debug builds).
@@ -152,6 +205,7 @@ final class AppState {
 
     /// Show the Settings window (creating it on first use) and bring it forward.
     func openSettings() {
+        refreshPermissionStatuses()
         settingsPresenter?()
     }
 
@@ -163,7 +217,9 @@ final class AppState {
         overlaySettings = Self.loadOverlaySettings()
         hideMenuBarIcon = UserDefaults.standard.bool(forKey: Self.hideMenuBarIconKey)
         launchAtLogin = loginItem.isEnabled
+        pinManager.setLanguage(language)
         applyLanguage()
+        refreshScreenCapturePermissionStatus()
     }
 
     // MARK: - Lifecycle
@@ -171,13 +227,18 @@ final class AppState {
     /// Called once at launch. Idempotent.
     func start() {
         shortcuts.start()
+        pinManager.start()
+        installApplicationActivationObserver()
+        refreshPermissionStatuses()
         applyEnabledState()
     }
 
     /// Called at termination.
     func stop() {
+        pinManager.stop()
         engine?.stop()
         accessibilityWatcher.stop()
+        removeApplicationActivationObserver()
     }
 
     // MARK: - Accessibility flow
@@ -218,6 +279,49 @@ final class AppState {
         accessibilityWatcher.stop()
     }
 
+    /// Refresh both independent privacy permissions without prompting. This is
+    /// used by Settings and app activation so revocation is explained before a
+    /// user tries Pin again.
+    func refreshPermissionStatuses() {
+        reconcilePinPermissionOutcome()
+        refreshAccessibilityStatus()
+        refreshScreenCapturePermissionStatus()
+    }
+
+    /// Refresh Screen Recording state only. If an authorized grant disappears,
+    /// use PinManager's existing revocation hook: it tears down Pin sessions but
+    /// leaves the Mission Control engine and Accessibility state untouched.
+    func refreshScreenCapturePermissionStatus() {
+        let previousStatus = screenCapturePermissionStatus
+        let currentStatus = pinManager.permissionController.preflight()
+        screenCapturePermissionStatus = currentStatus
+
+        switch currentStatus {
+        case .authorized:
+            screenCapturePermissionMessage = .authorized
+        case .notGranted:
+            if previousStatus == .authorized {
+                screenCapturePermissionMessage = .revoked
+                pinManager.handlePermissionRevoked()
+            } else if !screenCapturePermissionRequestInFlight {
+                screenCapturePermissionMessage = message(for: screenCapturePermissionOutcome)
+            }
+        }
+    }
+
+    /// Explicit Settings/Pin recovery action. This is the only AppState route
+    /// that can request Screen Recording access; passive status refreshes never
+    /// call the prompting API.
+    func requestScreenCaptureAccess() async {
+        guard !screenCapturePermissionRequestInFlight else { return }
+        screenCapturePermissionRequestInFlight = true
+
+        let outcome = await pinManager.permissionController.requestAccess()
+        screenCapturePermissionOutcome = outcome
+        screenCapturePermissionRequestInFlight = false
+        refreshScreenCapturePermissionStatus()
+    }
+
     // MARK: - Private
 
     private func applyLanguage() {
@@ -226,18 +330,81 @@ final class AppState {
         ThirdPartyBundleLocalization.apply(language: language)
     }
 
+    /// Surface an outcome produced by an explicit Mission Control Pin request
+    /// without making PinManager's internal state part of the Settings view.
+    /// Tracking the manager's last value prevents an older Pin denial from
+    /// overwriting a newer Settings setup result.
+    private func reconcilePinPermissionOutcome() {
+        let managerOutcome = pinManager.lastPermissionOutcome
+        guard managerOutcome != lastObservedPinPermissionOutcome else { return }
+        lastObservedPinPermissionOutcome = managerOutcome
+        guard let managerOutcome else { return }
+        screenCapturePermissionOutcome = managerOutcome
+        refreshScreenCapturePermissionStatus()
+    }
+
+    private func message(
+        for outcome: ScreenCapturePermissionOutcome?
+    ) -> ScreenCapturePermissionMessage {
+        switch outcome {
+        case .denied:
+            .denied
+        case .needsRetry:
+            .needsRetry
+        case .alreadyAuthorized, .authorized, nil:
+            .setup
+        }
+    }
+
+    private func installApplicationActivationObserver() {
+        guard applicationActivationObserver == nil else { return }
+        applicationActivationObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.refreshPermissionStatuses()
+            }
+        }
+    }
+
+    private func removeApplicationActivationObserver() {
+        guard let observer = applicationActivationObserver else { return }
+        NotificationCenter.default.removeObserver(observer)
+        applicationActivationObserver = nil
+    }
+
     private func applyEnabledState() {
+        pinManager.setMasterEnabled(isEnabled)
         if isEnabled {
             let engine = engine ?? MissionControlEngine(
                 actionsProvider: { [weak self] in self?.overlaySettings.enabledActions ?? [] },
+                pinStateProvider: { [weak self] windowID, ownerPID in
+                    self?.pinState(for: windowID, ownerPID: ownerPID) ?? .unpinned
+                },
+                togglePinHandler: { [weak self] source in
+                    self?.togglePin(for: source)
+                },
+                excludedWindowIDsProvider: { [weak self] in
+                    self?.pinnedMirrorWindowIDs ?? []
+                },
+                missionControlVisibilityHandler: { [weak self] visible in
+                    self?.setMissionControlVisible(visible)
+                },
                 chordProvider: { [weak self] shortcut in self?.shortcuts.chord(for: shortcut) },
                 localeProvider: { [weak self] in self?.locale ?? .current }
             )
             self.engine = engine
+            pinManager.onStateChanged = { [weak self, weak engine] in
+                self?.reconcilePinPermissionOutcome()
+                engine?.pinStateDidChange()
+            }
             engine.start()
         } else {
             engine?.stop()
             engine = nil
+            pinManager.onStateChanged = nil
         }
     }
 

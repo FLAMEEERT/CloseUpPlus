@@ -40,6 +40,8 @@
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026 Hangzhou Wumou Software Co., Ltd. Licensed under GPL-3.0.</string>
+	<key>NSScreenCaptureUsageDescription</key>
+	<string>CloseUp captures only the selected window locally to show a view-only mirror. It captures no audio, records no files, and uploads nothing.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<!-- Sparkle auto-update. The updater pins each architecture's appcast at

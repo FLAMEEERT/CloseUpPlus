@@ -11,8 +11,8 @@ struct OverlayGeometryTests {
 
     @Test("cluster width grows with the number of buttons")
     func clusterSize() {
-        let one = OverlayGeometry(windowFrame: window, actionCount: 1, pivotHeight: pivot)
-        let three = OverlayGeometry(windowFrame: window, actionCount: 3, pivotHeight: pivot)
+        let one = OverlayGeometry(windowFrame: window, controlCount: 1, pivotHeight: pivot)
+        let three = OverlayGeometry(windowFrame: window, controlCount: 3, pivotHeight: pivot)
         // padding*2 + n*button + (n-1)*spacing
         let oneWidth: CGFloat = 6 * 2 + 22          // 34
         let threeWidth: CGFloat = 6 * 2 + 3 * 22 + 2 * 4 // 86
@@ -22,15 +22,15 @@ struct OverlayGeometryTests {
         #expect(three.clusterSize.height == height)
     }
 
-    @Test("zero actions yields an empty cluster")
+    @Test("zero controls yields an empty cluster")
     func emptyCluster() {
-        let g = OverlayGeometry(windowFrame: window, actionCount: 0, pivotHeight: pivot)
+        let g = OverlayGeometry(windowFrame: window, controlCount: 0, pivotHeight: pivot)
         #expect(g.clusterSize == .zero)
     }
 
     @Test("CG→AppKit flip inverts Y about the pivot, leaves X")
     func coordinateFlip() {
-        let g = OverlayGeometry(windowFrame: window, actionCount: 3, pivotHeight: pivot)
+        let g = OverlayGeometry(windowFrame: window, controlCount: 3, pivotHeight: pivot)
         let cg = g.clusterFrameCG
         let ns = g.nsWindowFrame
         #expect(ns.minX == cg.minX)
@@ -43,7 +43,7 @@ struct OverlayGeometryTests {
 
     @Test("hit-test resolves each button center and partitions the whole cluster (no dead gaps)")
     func hitTesting() {
-        let g = OverlayGeometry(windowFrame: window, actionCount: 3, pivotHeight: pivot)
+        let g = OverlayGeometry(windowFrame: window, controlCount: 3, pivotHeight: pivot)
         // Center of each button still hits its index.
         for index in 0..<3 {
             let r = g.buttonRectCG(index)
@@ -66,7 +66,7 @@ struct OverlayGeometryTests {
 
     @Test("the cluster's outer half lies above the window — the sticky-hover region")
     func outerHalfAboveWindow() {
-        let g = OverlayGeometry(windowFrame: window, actionCount: 3, pivotHeight: pivot)
+        let g = OverlayGeometry(windowFrame: window, controlCount: 3, pivotHeight: pivot)
         let first = g.buttonRectCG(0)
         // A point on the OUTER (above-the-thumbnail) half of the first button: inside the
         // cluster, but above the window's top edge so it is NOT inside the window frame.
@@ -82,7 +82,7 @@ struct OverlayGeometryTests {
 
     @Test("cluster straddles the top edge, inset from the left")
     func anchoring() {
-        let g = OverlayGeometry(windowFrame: window, actionCount: 2, pivotHeight: pivot)
+        let g = OverlayGeometry(windowFrame: window, controlCount: 2, pivotHeight: pivot)
         let first = g.buttonRectCG(0)
         // First button's left edge sits `edgeInset` in from the window's left edge.
         #expect(first.minX == window.minX + OverlayGeometry.edgeInset)
