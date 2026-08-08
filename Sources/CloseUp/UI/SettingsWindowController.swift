@@ -49,7 +49,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         )
         // `NSWindow.title` is a native-bridging surface that bypasses the injected
         // locale; the brand name is locale-independent so it needs no live update.
-        window.title = "CloseUp"
+        window.title = "CloseUpPlus"
         // Host a wrapper whose `body` applies `.localized`, so the locale reads
         // happen inside a re-evaluated body: `NSHostingView` then re-renders on a
         // language change and the Settings UI switches live. A fixed root view
@@ -57,7 +57,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         window.contentView = NSHostingView(rootView: SettingsWindowRoot(appState: appState))
         window.isReleasedWhenClosed = false
         window.center()
-        window.setFrameAutosaveName("CloseUp.Settings")
+        window.setFrameAutosaveName("CloseUpPlus.Settings")
         window.delegate = self
         self.window = window
         return window

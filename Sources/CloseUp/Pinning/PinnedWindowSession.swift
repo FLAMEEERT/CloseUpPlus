@@ -89,7 +89,7 @@ public final class PinnedWindowSession {
         source: ScreenCaptureWindowSource,
         frameRenderer: PinnedWindowFrameRenderer,
         outputQueue: DispatchQueue = DispatchQueue(
-            label: "com.oomol.CloseUp.pinned-window-output",
+            label: "com.flameeert.CloseUpPlus.pinned-window-output",
             qos: .userInitiated
         ),
         onSignal: ((PinnedWindowSessionSignal) -> Void)? = nil

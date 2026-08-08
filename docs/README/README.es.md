@@ -1,8 +1,8 @@
-# CloseUp
+# CloseUpPlus
 
 [English](../../README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · **Español** · [Português](README.pt-BR.md) · [Русский](README.ru.md)
 
-**Devuelve los controles a Mission Control.** CloseUp superpone controles de
+**Devuelve los controles a Mission Control.** CloseUpPlus superpone controles de
 ventana sobre el Mission Control nativo de macOS —cerrar, minimizar, maximizar,
 ocultar o salir de cualquier ventana sin abandonar la vista general— y añade
 control total con el teclado. Gratis, nativo y de código abierto.
@@ -47,19 +47,19 @@ control total con el teclado. Gratis, nativo y de código abierto.
 - **Nativo y discreto** — una superposición pasiva que nunca interfiere con la
   gestión del teclado propia de Mission Control; solo en la barra de menús, sin
   icono en el Dock.
-- **Actualización automática** — versiones firmadas y certificadas mediante
-  Sparkle, con un canal beta opcional.
+- **Pin interactivo** — fija una ventana desde Mission Control e interactúa con
+  la ventana real al mover el puntero sobre ella.
 
 ## Comparativa
 
-CloseUp se centra en una sola cosa: actuar sobre las ventanas directamente
+CloseUpPlus se centra en una sola cosa: actuar sobre las ventanas directamente
 dentro de la vista **nativa** de Mission Control. Así se compara con las
 alternativas más cercanas que hacen lo mismo (verificado el 2026-07-02 en el
 sitio/repositorio oficial de cada proyecto —consulta los enlaces para ver las
 fuentes—; los campos que el fabricante no documenta se marcan como «No
 documentado» en lugar de adivinarse):
 
-| | CloseUp | [Mission Control Close](https://missioncontrolclose.com/) | [Open Mission Control](https://github.com/nohackjustnoobb/OpenMissionControl) | [Mission Control Plus](https://www.fadel.io/missioncontrolplus) |
+| | CloseUpPlus | [Mission Control Close](https://missioncontrolclose.com/) | [Open Mission Control](https://github.com/nohackjustnoobb/OpenMissionControl) | [Mission Control Plus](https://www.fadel.io/missioncontrolplus) |
 |---|---|---|---|---|
 | Precio | Gratis | £5 de pago único (prueba de 7 días) | Gratis | De pago, precio no publicado (prueba de 10 días) |
 | Licencia | Código abierto (GPL-3.0) | Código cerrado | Código abierto (GPL-3.0) | Código cerrado |
@@ -68,34 +68,32 @@ documentado» en lugar de adivinarse):
 | Atajos de teclado reasignables | Todas las acciones | Tiene atajos; no se documenta si son reasignables | Fijos (⌘Q/⌘W/⌘M/⌘F) | Fijos (⌘W/⌘M/⌘Q/⏎) |
 | Localización | 9 idiomas, cambiables en la app | No documentado | No documentado | No documentado |
 | macOS necesario | 14.0+ | 26.0 (Tahoe)+ | No documentado | 10.13+ |
-| Arquitectura de CPU | Apple Silicon e Intel, compilaciones firmadas por separado | Solo Apple Silicon | No documentado | No documentado |
-| Distribución | Descarga directa + Homebrew, certificado, actualización automática con Sparkle | Descarga directa, pago mediante LemonSqueezy | GitHub + Homebrew (sin firmar; hay que quitar la cuarentena manualmente) | Descarga directa |
+| Arquitectura de CPU | Apple Silicon e Intel, compilaciones separadas | Solo Apple Silicon | No documentado | No documentado |
+| Distribución | GitHub Releases (firma ad hoc, sin notarización de Apple) | Descarga directa, pago mediante LemonSqueezy | GitHub + Homebrew (sin firmar; hay que quitar la cuarentena manualmente) | Descarga directa |
 
 Otras herramientas de gestión de ventanas de macOS —[AltTab](https://github.com/lwouis/alt-tab-macos), [DockDoor](https://github.com/ejbills/DockDoor), [HyperDock](https://bahoom.com/hyperdock), [Contexts](https://contexts.co/)— ofrecen acciones de ventana similares (cerrar, ocultar, cambiar), pero a través de su propio conmutador o de una interfaz al pasar el cursor por el Dock, no de la vista nativa de Mission Control, por lo que resuelven un problema relacionado pero distinto y no se incluyen en la comparativa anterior.
 
 ## Requisitos
 
 - macOS 14.0 o posterior
-- Apple Silicon (arm64) o Intel (x86_64): CloseUp distribuye una compilación
-  firmada por separado para cada arquitectura; descarga la que corresponda a
-  tu Mac
-- Permiso de Accesibilidad (CloseUp lee las ventanas y actúa sobre ellas a través
-  de la API de Accesibilidad; nunca graba tu pantalla)
+- Apple Silicon (arm64) o Intel (x86_64): CloseUpPlus distribuye una compilación
+  separada para cada arquitectura; descarga la que corresponda a tu Mac
+- Permiso de Accesibilidad (CloseUpPlus lee las ventanas y actúa sobre ellas a través
+  de la API de Accesibilidad)
+- Permiso de grabación de pantalla solo para Pin; la ventana seleccionada se
+  procesa localmente y no se guarda ni se sube
 
 ## Instalación
 
 Descarga la versión correspondiente al chip de tu Mac desde
-[Releases](https://github.com/oomol-lab/CloseUp/releases) —`CloseUp-*-arm64.dmg`
-para Apple Silicon, `CloseUp-*-x86_64.dmg` para Intel—, ábrela y arrastra
-CloseUp a Aplicaciones. También puedes instalarlo con Homebrew (detecta la
-arquitectura automáticamente):
-
-```bash
-brew install --cask oomol-lab/tap/closeup
-```
+[Releases](https://github.com/FLAMEEERT/CloseUpPlus/releases) —`CloseUpPlus-*-arm64.dmg`
+para Apple Silicon, `CloseUpPlus-*-x86_64.dmg` para Intel—, ábrela y arrastra
+CloseUpPlus a Aplicaciones. Esta compilación no está notarizada por Apple: en el
+primer inicio, haz clic derecho en la app y elige **Abrir**, o permítela en
+Ajustes del Sistema → Privacidad y seguridad.
 
 En el primer arranque, concede el acceso de Accesibilidad en Ajustes del Sistema →
-Privacidad y seguridad → Accesibilidad: CloseUp abre el panel correcto por ti.
+Privacidad y seguridad → Accesibilidad: CloseUpPlus abre el panel correcto por ti.
 
 ## Uso
 
@@ -115,7 +113,7 @@ para mostrar su grupo de controles, o usa el teclado:
 | Ocultar todas menos esta | ⌥⌘H | todas las apps excepto la que está bajo el puntero |
 
 Cada atajo se puede reasignar en Ajustes → Atajos. Puedes activar o desactivar
-CloseUp en cualquier momento desde el icono de la barra de menús o Ajustes →
+CloseUpPlus en cualquier momento desde el icono de la barra de menús o Ajustes →
 General.
 
 ## Ajustes
@@ -124,8 +122,6 @@ General.
   de la barra de menús, estado de Accesibilidad con concesión de un solo clic,
   qué botones de control aparecen, y el idioma dentro de la app.
 - **Atajos** — reasigna cada acción.
-- **Actualizaciones** — comprobaciones automáticas (canal Estable o Beta) y un
-  «Buscar actualizaciones» manual.
 - **Acerca de** — versión, licencia, enlace al repositorio de GitHub, y
   agradecimientos.
 
@@ -153,5 +149,5 @@ y [../RUNBOOK.md](../RUNBOOK.md) para el proceso de publicación.
 
 Gracias a [OpenMissionControl](https://github.com/nohackjustnoobb/OpenMissionControl),
 [DockDoor](https://github.com/ejbills/DockDoor) y
-[alt-tab-macos](https://github.com/lwouis/alt-tab-macos): el uso que hace CloseUp de las API privadas de Mission Control se
+[alt-tab-macos](https://github.com/lwouis/alt-tab-macos): el uso que hace CloseUpPlus de las API privadas de Mission Control se
 inspira en cómo las emplean estos proyectos.

@@ -781,106 +781,106 @@
         }
       }
     },
-    "CloseUp uses Accessibility to read Mission Control windows and perform its controls. Screen Recording is separate and used only for Pin: it mirrors only the selected window locally, captures no audio, records or saves no files, uploads no frames, and sends no analytics payload.": {
+    "CloseUpPlus uses Accessibility to read Mission Control windows and perform its controls. Screen Recording is separate and used only for Pin: it mirrors only the selected window locally, captures no audio, records or saves no files, uploads no frames, and sends no analytics payload.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp verwendet Bedienungshilfen, um Fenster in Mission Control zu lesen und die entsprechenden Aktionen auszuführen. Die Bildschirmaufnahme ist davon unabhängig und wird nur für Pin verwendet: Es wird ausschließlich das ausgewählte Fenster lokal gespiegelt, ohne Audio aufzunehmen, Dateien zu erstellen oder zu speichern, Frames hochzuladen oder Analyse-Nutzdaten zu senden."
+            "value": "CloseUpPlus verwendet Bedienungshilfen, um Fenster in Mission Control zu lesen und die entsprechenden Aktionen auszuführen. Die Bildschirmaufnahme ist davon unabhängig und wird nur für Pin verwendet: Es wird ausschließlich das ausgewählte Fenster lokal gespiegelt, ohne Audio aufzunehmen, Dateien zu erstellen oder zu speichern, Frames hochzuladen oder Analyse-Nutzdaten zu senden."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp usa Accesibilidad para leer las ventanas de Mission Control y ejecutar sus acciones. La grabación de pantalla es independiente y solo se usa para Pin: refleja localmente únicamente la ventana seleccionada, sin capturar audio, grabar ni guardar archivos, subir fotogramas ni enviar datos de análisis."
+            "value": "CloseUpPlus usa Accesibilidad para leer las ventanas de Mission Control y ejecutar sus acciones. La grabación de pantalla es independiente y solo se usa para Pin: refleja localmente únicamente la ventana seleccionada, sin capturar audio, grabar ni guardar archivos, subir fotogramas ni enviar datos de análisis."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp utilise l’accessibilité pour lire les fenêtres de Mission Control et exécuter ses actions. L’enregistrement d’écran est indépendant et utilisé uniquement pour Pin : seule la fenêtre sélectionnée est mise en miroir localement, sans audio, sans enregistrer ni sauvegarder de fichiers, sans téléverser d’images et sans envoyer de données analytiques."
+            "value": "CloseUpPlus utilise l’accessibilité pour lire les fenêtres de Mission Control et exécuter ses actions. L’enregistrement d’écran est indépendant et utilisé uniquement pour Pin : seule la fenêtre sélectionnée est mise en miroir localement, sans audio, sans enregistrer ni sauvegarder de fichiers, sans téléverser d’images et sans envoyer de données analytiques."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp はアクセシビリティを使用して Mission Control のウインドウを読み取り、操作します。画面収録は独立した権限で、Pin にのみ使用されます。選択したウインドウだけをローカルでミラー表示し、音声の取得、録画やファイル保存、フレームのアップロード、分析データの送信は行いません。"
+            "value": "CloseUpPlus はアクセシビリティを使用して Mission Control のウインドウを読み取り、操作します。画面収録は独立した権限で、Pin にのみ使用されます。選択したウインドウだけをローカルでミラー表示し、音声の取得、録画やファイル保存、フレームのアップロード、分析データの送信は行いません。"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "O CloseUp usa Acessibilidade para ler as janelas do Mission Control e executar seus controles. A Gravação de Tela é independente e usada apenas para o Pin: somente a janela selecionada é espelhada localmente, sem capturar áudio, gravar ou salvar arquivos, enviar quadros ou transmitir dados analíticos."
+            "value": "O CloseUpPlus usa Acessibilidade para ler as janelas do Mission Control e executar seus controles. A Gravação de Tela é independente e usada apenas para o Pin: somente a janela selecionada é espelhada localmente, sem capturar áudio, gravar ou salvar arquivos, enviar quadros ou transmitir dados analíticos."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp использует Универсальный доступ, чтобы читать окна в Mission Control и выполнять их действия. Запись экрана является отдельным разрешением и используется только для Pin: локально отображается только выбранное окно, без захвата звука, записи или сохранения файлов, отправки кадров и аналитических данных."
+            "value": "CloseUpPlus использует Универсальный доступ, чтобы читать окна в Mission Control и выполнять их действия. Запись экрана является отдельным разрешением и используется только для Pin: локально отображается только выбранное окно, без захвата звука, записи или сохранения файлов, отправки кадров и аналитических данных."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp 使用“辅助功能”来读取调度中心中的窗口并执行相应操作。“屏幕录制”权限独立存在，仅用于 Pin：只在本地镜像显示选中的窗口，不采集音频、不录制或保存文件、不上传画面，也不发送分析数据。"
+            "value": "CloseUpPlus 使用“辅助功能”来读取调度中心中的窗口并执行相应操作。“屏幕录制”权限独立存在，仅用于 Pin：只在本地镜像显示选中的窗口，不采集音频、不录制或保存文件、不上传画面，也不发送分析数据。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp 使用「輔助使用」來讀取調度中心中的視窗並執行相關操作。「螢幕錄製」權限獨立存在，僅用於 Pin：只在本機鏡像顯示選取的視窗，不擷取音訊、不錄製或儲存檔案、不上傳畫面，也不傳送分析資料。"
+            "value": "CloseUpPlus 使用「輔助使用」來讀取調度中心中的視窗並執行相關操作。「螢幕錄製」權限獨立存在，僅用於 Pin：只在本機鏡像顯示選取的視窗，不擷取音訊、不錄製或儲存檔案、不上傳畫面，也不傳送分析資料。"
           }
         }
       }
     },
-    "CloseUp updates automatically using a signed, notarized release feed.": {
+    "CloseUpPlus updates automatically using a signed, notarized release feed.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp wird automatisch über einen signierten, notarisierten Release-Feed aktualisiert."
+            "value": "CloseUpPlus wird automatisch über einen signierten, notarisierten Release-Feed aktualisiert."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp se actualiza automáticamente mediante un canal de versiones firmado y notarizado."
+            "value": "CloseUpPlus se actualiza automáticamente mediante un canal de versiones firmado y notarizado."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp se met à jour automatiquement via un flux de publication signé et notarisé."
+            "value": "CloseUpPlus se met à jour automatiquement via un flux de publication signé et notarisé."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp は、署名・公証済みのリリースフィードを使用して自動的にアップデートします。"
+            "value": "CloseUpPlus は、署名・公証済みのリリースフィードを使用して自動的にアップデートします。"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp se atualiza automaticamente usando um feed de versões assinado e notarizado."
+            "value": "CloseUpPlus se atualiza automaticamente usando um feed de versões assinado e notarizado."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp обновляется автоматически через подписанный и нотаризованный канал выпусков."
+            "value": "CloseUpPlus обновляется автоматически через подписанный и нотаризованный канал выпусков."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp 使用经过签名和公证的发布源自动更新。"
+            "value": "CloseUpPlus 使用经过签名和公证的发布源自动更新。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp 使用經過簽名和公證的發佈來源自動更新。"
+            "value": "CloseUpPlus 使用經過簽名和公證的發佈來源自動更新。"
           }
         }
       }
@@ -1041,54 +1041,54 @@
         }
       }
     },
-    "Enable CloseUp": {
+    "Enable CloseUpPlus": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp aktivieren"
+            "value": "CloseUpPlus aktivieren"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Activar CloseUp"
+            "value": "Activar CloseUpPlus"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Activer CloseUp"
+            "value": "Activer CloseUpPlus"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp を有効にする"
+            "value": "CloseUpPlus を有効にする"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ativar o CloseUp"
+            "value": "Ativar o CloseUpPlus"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Включить CloseUp"
+            "value": "Включить CloseUpPlus"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "启用 CloseUp"
+            "value": "启用 CloseUpPlus"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "啟用 CloseUp"
+            "value": "啟用 CloseUpPlus"
           }
         }
       }
@@ -2185,54 +2185,54 @@
         }
       }
     },
-    "Quit CloseUp": {
+    "Quit CloseUpPlus": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp beenden"
+            "value": "CloseUpPlus beenden"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Salir de CloseUp"
+            "value": "Salir de CloseUpPlus"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quitter CloseUp"
+            "value": "Quitter CloseUpPlus"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp を終了"
+            "value": "CloseUpPlus を終了"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Encerrar o CloseUp"
+            "value": "Encerrar o CloseUpPlus"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Завершить CloseUp"
+            "value": "Завершить CloseUpPlus"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "退出 CloseUp"
+            "value": "退出 CloseUpPlus"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "結束 CloseUp"
+            "value": "結束 CloseUpPlus"
           }
         }
       }
@@ -2497,54 +2497,54 @@
         }
       }
     },
-    "Screen Recording access was allowed, but CloseUp must be restarted before Pin can use it.": {
+    "Screen Recording access was allowed, but CloseUpPlus must be restarted before Pin can use it.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Der Zugriff auf die Bildschirmaufnahme wurde erlaubt, aber CloseUp muss neu gestartet werden, bevor Pin ihn verwenden kann."
+            "value": "Der Zugriff auf die Bildschirmaufnahme wurde erlaubt, aber CloseUpPlus muss neu gestartet werden, bevor Pin ihn verwenden kann."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Se ha permitido el acceso a la grabación de pantalla, pero debes reiniciar CloseUp para que Pin pueda usarlo."
+            "value": "Se ha permitido el acceso a la grabación de pantalla, pero debes reiniciar CloseUpPlus para que Pin pueda usarlo."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "L’accès à l’enregistrement d’écran a été autorisé, mais CloseUp doit être redémarré avant que Pin puisse l’utiliser."
+            "value": "L’accès à l’enregistrement d’écran a été autorisé, mais CloseUpPlus doit être redémarré avant que Pin puisse l’utiliser."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "画面収録へのアクセスは許可されましたが、Pin で使うには CloseUp を再起動する必要があります。"
+            "value": "画面収録へのアクセスは許可されましたが、Pin で使うには CloseUpPlus を再起動する必要があります。"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "O acesso à Gravação de Tela foi permitido, mas é necessário reiniciar o CloseUp para que o Pin possa usá-lo."
+            "value": "O acesso à Gravação de Tela foi permitido, mas é necessário reiniciar o CloseUpPlus para que o Pin possa usá-lo."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Доступ к записи экрана разрешён, но перед использованием Pin необходимо перезапустить CloseUp."
+            "value": "Доступ к записи экрана разрешён, но перед использованием Pin необходимо перезапустить CloseUpPlus."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "“屏幕录制”权限已允许，但 CloseUp 必须重新启动后，Pin 才能使用。"
+            "value": "“屏幕录制”权限已允许，但 CloseUpPlus 必须重新启动后，Pin 才能使用。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "「螢幕錄製」權限已允許，但必須重新啟動 CloseUp，Pin 才能使用。"
+            "value": "「螢幕錄製」權限已允許，但必須重新啟動 CloseUpPlus，Pin 才能使用。"
           }
         }
       }

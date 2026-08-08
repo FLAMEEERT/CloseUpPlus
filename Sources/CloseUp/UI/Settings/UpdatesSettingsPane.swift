@@ -59,7 +59,7 @@ struct UpdatesSettingsPane: View {
 
     private var footerText: String {
         if appState.updateController.canCheckForUpdates {
-            return appState.loc("CloseUp updates automatically using a signed, notarized release feed.")
+            return appState.loc("CloseUpPlus updates automatically using a signed, notarized release feed.")
         }
         return appState.loc("Update checks are unavailable in development builds.")
     }
