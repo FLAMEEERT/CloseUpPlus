@@ -500,8 +500,18 @@ behaviour (live `CGWindowList` / AX inspection) and the official headers.
   space), so the lights recover on the next hover. Do **NOT** hold it until the next
   `beginSession` (a session-long latch): that reintroduces the documented "lights
   dead for the rest of the MC session" class for any click that doesn't dismiss MC.
-  A button hit must NOT suppress — MC stays open, so the lights re-show on the next
-  hover for back-to-back window management.
+  A window-action or Unpin hit must NOT suppress — MC stays open, so the lights
+  re-show on the next hover for back-to-back window management. Pin is the sole
+  exception: its swallowed click explicitly wakes/exits Mission Control before
+  capture starts, because pinned mirrors are hidden while MC remains visible.
+- **Decode ScreenCaptureKit frame status attachments as raw integers.**
+  `SCStreamFrameInfo.status` is bridged in the sample-buffer attachment dictionary
+  as an `NSNumber`/`Int`, never as an `SCFrameStatus` instance. Decode the raw
+  integer first and then map it to the semantic status; a direct
+  `as? SCFrameStatus` cast returns nil on the first frame, which the stream treats
+  as `invalidFrame` → `internalFailure` and immediately tears capture down. The
+  resulting `SCStreamError` -3808 from `stopCapture` is secondary (an attempt to
+  stop a stream that never reached live), not the original failure.
 
 ## Deliberate design decisions (do not "fix" these)
 

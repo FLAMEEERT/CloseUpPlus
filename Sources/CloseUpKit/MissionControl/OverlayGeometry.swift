@@ -31,23 +31,23 @@ public struct OverlayGeometry: Equatable, Sendable {
     public static let topOverhang: CGFloat = buttonSize / 2 + clusterPadding
 
     public let windowFrame: CGRect
-    public let actionCount: Int
+    public let controlCount: Int
     /// Height of the primary (menu-bar) screen — the pivot for the CG↔AppKit
     /// Y flip. CG global coords pivot about this screen's top edge regardless of
     /// which display the window is on.
     public let pivotHeight: CGFloat
 
-    public init(windowFrame: CGRect, actionCount: Int, pivotHeight: CGFloat) {
+    public init(windowFrame: CGRect, controlCount: Int, pivotHeight: CGFloat) {
         self.windowFrame = windowFrame
-        self.actionCount = max(0, actionCount)
+        self.controlCount = max(0, controlCount)
         self.pivotHeight = pivotHeight
     }
 
     public var clusterSize: CGSize {
-        guard actionCount > 0 else { return .zero }
+        guard controlCount > 0 else { return .zero }
         let width = Self.clusterPadding * 2
-            + CGFloat(actionCount) * Self.buttonSize
-            + CGFloat(actionCount - 1) * Self.buttonSpacing
+            + CGFloat(controlCount) * Self.buttonSize
+            + CGFloat(controlCount - 1) * Self.buttonSpacing
         let height = Self.clusterPadding * 2 + Self.buttonSize
         return CGSize(width: width, height: height)
     }
@@ -85,18 +85,18 @@ public struct OverlayGeometry: Equatable, Sendable {
 
     /// The button index hit by a CG-space point, or `nil` for a miss (outside the
     /// cluster). The WHOLE cluster is the live target, partitioned into
-    /// `actionCount` equal vertical columns: the 6 pt padding bands and the 4 pt
+    /// `controlCount` equal vertical columns: the 6 pt padding bands and the 4 pt
     /// inter-button gaps become hit area instead of dead space, so each control's
     /// clickable region is its full column × the full 32 pt cluster height, rather
     /// than a tight 20×20 circle (~49 % coverage) with `nil` gaps between buttons.
     /// The visual 20 pt circles (`buttonRectCG`) are unchanged; only the hit
     /// mapping widens.
     public func hitTest(_ point: CGPoint) -> Int? {
-        guard actionCount > 0 else { return nil }
+        guard controlCount > 0 else { return nil }
         let cluster = clusterFrameCG
         guard cluster.contains(point) else { return nil }
-        let columnWidth = cluster.width / CGFloat(actionCount)
+        let columnWidth = cluster.width / CGFloat(controlCount)
         let column = Int((point.x - cluster.minX) / columnWidth)
-        return min(max(column, 0), actionCount - 1)
+        return min(max(column, 0), controlCount - 1)
     }
 }

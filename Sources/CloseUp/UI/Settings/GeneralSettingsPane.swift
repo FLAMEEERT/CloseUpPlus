@@ -33,10 +33,29 @@ struct GeneralSettingsPane: View {
                         appState.requestAccessibilityAccess()
                     }
                 }
+
+                LabeledContent {
+                    screenCaptureStatusBadge
+                } label: {
+                    Text(appState.loc("Screen Recording"))
+                }
+
+                if appState.screenCapturePermissionStatus != .authorized {
+                    Button(appState.loc(
+                        appState.screenCapturePermissionRequestInFlight
+                            ? "Requesting…"
+                            : "Set Up Screen Recording…"
+                    )) {
+                        Task { await appState.requestScreenCaptureAccess() }
+                    }
+                    .disabled(appState.screenCapturePermissionRequestInFlight)
+                }
+
+                screenCapturePermissionMessage
             } header: {
                 Text(appState.loc("Permission"))
             } footer: {
-                Text(appState.loc("CloseUp needs Accessibility access to read the windows in Mission Control and to close, minimize, hide, or quit them. It never records your screen."))
+                Text(appState.loc("CloseUp uses Accessibility to read Mission Control windows and perform its controls. Screen Recording is separate and used only for Pin: it mirrors only the selected window locally, captures no audio, records or saves no files, uploads no frames, and sends no analytics payload."))
                     .settingsFooter()
             }
 
@@ -68,9 +87,9 @@ struct GeneralSettingsPane: View {
         }
         .formStyle(.grouped)
         .overlayScrollers()
-        .onAppear { appState.refreshAccessibilityStatus() }
+        .onAppear { appState.refreshPermissionStatuses() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-            appState.refreshAccessibilityStatus()
+            appState.refreshPermissionStatuses()
         }
     }
 
@@ -80,6 +99,37 @@ struct GeneralSettingsPane: View {
                 .foregroundStyle(appState.accessibilityGranted ? DS.Palette.success : DS.Palette.warning)
             Text(appState.loc(appState.accessibilityGranted ? "Granted" : "Not granted"))
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    private var screenCaptureStatusBadge: some View {
+        let granted = appState.screenCapturePermissionStatus == .authorized
+        return HStack(spacing: DS.Spacing.xs) {
+            Image(systemName: granted ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                .foregroundStyle(granted ? DS.Palette.success : DS.Palette.warning)
+            Text(appState.loc(granted ? "Granted" : "Not granted"))
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    @ViewBuilder
+    private var screenCapturePermissionMessage: some View {
+        switch appState.screenCapturePermissionMessage {
+        case .authorized:
+            Text(appState.loc("Screen Recording access is available for Pin."))
+                .settingsFooter()
+        case .setup:
+            Text(appState.loc("Screen Recording access is required only for Pin. Set it up before using a selected-window mirror."))
+                .settingsFooter()
+        case .denied:
+            Text(appState.loc("Screen Recording access was denied. Allow it in System Settings to use Pin."))
+                .settingsFooter()
+        case .needsRetry:
+            Text(appState.loc("Screen Recording access was allowed, but CloseUp must be restarted before Pin can use it."))
+                .settingsFooter()
+        case .revoked:
+            Text(appState.loc("Screen Recording access was revoked. Re-enable it to use Pin."))
+                .settingsFooter()
         }
     }
 

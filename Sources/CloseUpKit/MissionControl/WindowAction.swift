@@ -4,7 +4,7 @@ import ApplicationServices
 /// of `allCases` is the left-to-right order buttons appear in the overlay
 /// cluster (close first — the primary action — mirroring the macOS title-bar
 /// traffic-light order, then hide/quit).
-public enum WindowAction: String, CaseIterable, Sendable {
+public enum WindowAction: String, CaseIterable, Equatable, Hashable, Sendable {
     case close
     case minimize
     case zoom

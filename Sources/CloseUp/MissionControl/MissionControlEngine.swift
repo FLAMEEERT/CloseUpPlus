@@ -5,14 +5,22 @@ import SwiftUI
 /// Orchestrates the Mission Control overlay: observes MC open/close, tracks the
 /// hovered thumbnail, positions a passive overlay window over it, and routes
 /// clicks (via the event tap + `OverlayGeometry`) and in-MC shortcuts to the
-/// window-action performer. All decision logic lives in tested `CloseUpKit` pure
-/// functions; this type is the thin platform-glue that wires them to live
-/// observers, timers, and an `NSWindow`.
+/// window-action performer. Overlay display and hit-testing use
+/// `OverlayControl`; keyboard shortcuts remain in the `WindowAction` domain.
+/// All decision logic lives in tested `CloseUpKit` pure functions; this type is
+/// the thin platform-glue that wires them to live observers, timers, and an
+/// `NSWindow`.
 @MainActor
 final class MissionControlEngine {
     /// Provides the enabled overlay actions (left-to-right) — read live so a
     /// settings change takes effect on the next session.
     private let actionsProvider: () -> [WindowAction]
+    /// Runtime Pin integration supplied by AppState. The state key includes the
+    /// owner pid so a reused CGWindowID cannot inherit another process's Pin.
+    private let pinStateProvider: (CGWindowID, pid_t) -> OverlayPinState
+    private let togglePinHandler: (WindowInfo) -> Void
+    private let excludedWindowIDsProvider: () -> Set<CGWindowID>
+    private let missionControlVisibilityHandler: (Bool) -> Void
     /// Resolves the key chord for an in-MC shortcut (defaults, or a
     /// KeyboardShortcuts-backed provider once that lands).
     private let chordProvider: (MissionControlShortcut) -> KeyChord?
@@ -35,29 +43,18 @@ final class MissionControlEngine {
     private var overlayWindow: NSWindow?
     private var windows: [WindowInfo] = []
     private var hovered: WindowInfo?
-    /// Cursor location at the last overlay resolve, used only as a SECONDARY guard to
-    /// skip a redundant re-resolve when the cursor has not moved between 60 Hz ticks
-    /// AND a window is already resolved/shown (`hovered != nil`) — when nothing is shown
-    /// yet, a stationary cursor must keep re-resolving so a first resolve that transiently
-    /// found no window still lights up once the thumbnail frame is reported on-screen
-    /// (a deliberate cursor-didn't-move early-out — re-resolving every tick when the
-    /// pointer is parked is wasted work). It is deliberately
-    /// NOT seeded at `beginSession`: it is `nil` while the engine is idle (reset in
-    /// `endSession`) and reset to `nil` again the instant the layout settles, so the
-    /// FIRST post-settle resolve always fires and shows the lights even when the cursor
-    /// is stationary — the fix for the "lights occasionally don't appear on a normal
-    /// enter" bug (a Mission Control swipe never moves the cursor, so a seed here blocked
-    /// that first show). Suppressing the still-entering / paused-mid-swipe case is the
-    /// job of the exact frame-stability settle gate (`layoutSettled`), not this cursor
-    /// guard — the enter/pause suppression is keyed off an exact whole-window-set
-    /// commit signal, never cursor movement.
+    /// Cursor location at the last poll tick. The display path requires a real
+    /// location change after the latest unsettled period, so a parked pointer
+    /// cannot acquire its first hover during Mission Control entry or a paused
+    /// gesture. The post-settle re-anchor watch is the deliberate exception for
+    /// an overlay that was already shown before a re-tile.
     private var lastMouseLocation: CGPoint?
     private var geometry: OverlayGeometry?
-    /// The actions actually shown for the hovered window — the settings-enabled
-    /// set intersected with the window's real AX capabilities. Drives both the
-    /// rendered cluster and the click → action mapping (so button index N always
-    /// matches what is on screen).
-    private var currentActions: [WindowAction] = []
+    /// The controls actually shown for the hovered window — Pin/Unpin plus the
+    /// settings-enabled WindowActions intersected with the window's real AX
+    /// capabilities. Drives both rendering and click mapping (so button index N
+    /// always matches what is on screen).
+    private var currentControls: [OverlayControl] = []
     /// Per-window capabilities from this session's SUCCESSFUL non-empty AX
     /// resolves — the hover path's FAST PATH: a cached window never pays AX IPC
     /// again (the resolve used to run on every hover change, ~25–45 ms on the
@@ -103,6 +100,11 @@ final class MissionControlEngine {
     /// hover"). A fresh hover (windowID change in `trackMouse`) is the one
     /// legitimate re-entry, and clearing there restores it.
     private var awaitFreshHoverAfterClick = false
+    /// A visible overlay may be ordered out while Mission Control re-tiles. Keep
+    /// the post-settle watch eligible so the stationary cursor can restore that
+    /// already-attempted overlay; this never enables the first display of a new
+    /// session. Cleared by session boundaries and clicks.
+    private var postSettleReanchorEligible = false
     private let hoverState = OverlayHoverState()
     private var pivotHeight: CGFloat = 0
 
@@ -258,6 +260,10 @@ final class MissionControlEngine {
         performer: any WindowActionPerforming = AccessibilityWindowActionPerformer(),
         capabilityResolver: any WindowCapabilityResolving = AccessibilityCapabilityResolver(),
         actionsProvider: @escaping () -> [WindowAction],
+        pinStateProvider: @escaping (CGWindowID, pid_t) -> OverlayPinState = { _, _ in .unpinned },
+        togglePinHandler: @escaping (WindowInfo) -> Void = { _ in },
+        excludedWindowIDsProvider: @escaping () -> Set<CGWindowID> = { [] },
+        missionControlVisibilityHandler: @escaping (Bool) -> Void = { _ in },
         chordProvider: @escaping (MissionControlShortcut) -> KeyChord? = { $0.defaultChord },
         localeProvider: @escaping () -> Locale = { .current }
     ) {
@@ -265,6 +271,10 @@ final class MissionControlEngine {
         self.performer = performer
         self.capabilityResolver = capabilityResolver
         self.actionsProvider = actionsProvider
+        self.pinStateProvider = pinStateProvider
+        self.togglePinHandler = togglePinHandler
+        self.excludedWindowIDsProvider = excludedWindowIDsProvider
+        self.missionControlVisibilityHandler = missionControlVisibilityHandler
         self.chordProvider = chordProvider
         self.localeProvider = localeProvider
     }
@@ -348,16 +358,16 @@ final class MissionControlEngine {
         mcSurfacePresent = true
         resetSettleState() // keep the lights hidden until MC finishes entering
         windowFrames = [:]
+        missionControlVisibilityHandler(true)
         capabilityCache = [:]
         backgroundResolveRounds = [:] // fresh retry budget; in-flight ids clear at merge
         awaitFreshHoverAfterClick = false
+        postSettleReanchorEligible = false
         loggedPrewarmAllDark = false
-        // Do NOT seed `lastMouseLocation` here: it stays `nil` (from `endSession`) so the
-        // first resolve once the layout settles always shows the lights even with a
-        // stationary cursor — a Mission Control swipe never moves the cursor, so seeding
-        // it used to block that first show (the "lights occasionally don't appear on a
-        // normal enter" bug). Keeping the paused-mid-swipe dark is the exact
-        // frame-stability settle gate's job (`layoutSettled`), not the cursor guard.
+        // Seed the movement gate from the pointer's current position. A Mission
+        // Control swipe does not move the pointer, so the first stationary tick
+        // after frame settle must remain dark until the user moves it.
+        lastMouseLocation = CGEvent(source: nil)?.location
         clearReshowSuppression() // fresh MC session — lights live again
         pivotHeight = Self.menuBarScreenHeight()
         refreshWindows()
@@ -484,6 +494,9 @@ final class MissionControlEngine {
     /// space's window list lands; `trackMouse` rebuilds geometry on the next tick.
     private func resyncSession() {
         pivotHeight = Self.menuBarScreenHeight()
+        // A live overlay is being re-tiled. Keep its stationary recovery watch,
+        // but do not create one for a session that has not shown anything yet.
+        postSettleReanchorEligible = geometry != nil
         resetSettleState() // the new space re-tiles — hide until it settles
         hovered = nil
         overlayWindow?.orderOut(nil)
@@ -497,12 +510,16 @@ final class MissionControlEngine {
     private func endSession() {
         let wasLive = mouseTask != nil
         sessionActive = false
+        // Mirror panels are presentation-owned by PinManager. The engine only
+        // announces the boundary; it never hides, restores, or destroys them.
+        missionControlVisibilityHandler(false)
         mcSurfacePresent = false
         surfaceSeenThisSession = false
         windowFrames = [:]
         capabilityCache = [:]
         backgroundResolveRounds = [:] // in-flight ids clear at merge (guarded by sessionActive)
         awaitFreshHoverAfterClick = false
+        postSettleReanchorEligible = false
         resetSettleState()
         lastMouseLocation = nil
         clearReshowSuppression() // MC closed; nothing left to re-show
@@ -590,6 +607,10 @@ final class MissionControlEngine {
 
     private func refreshWindows() {
         let overlayID = overlayWindow.map { CGWindowID($0.windowNumber) }
+        // PinManager owns mirror panels and keeps their ids stable while they
+        // are hidden. Read the current snapshot for every enumeration rather
+        // than caching it across a Pin lifecycle transition.
+        let excludedMirrorIDs = excludedWindowIDsProvider()
         // Exclude system owners by PID: `kCGWindowOwnerName` is LOCALIZED ("程序坞",
         // …), so the name-based exclusion silently misses on every non-English
         // system and the owner's layer-0 surface joins the hover candidates —
@@ -612,6 +633,7 @@ final class MissionControlEngine {
                 // Never the overlay window itself (it is a high-level window,
                 // normally already dropped by the layer-0 filter — belt-and-suspenders).
                 guard window.windowID != overlayID else { return false }
+                guard !excludedMirrorIDs.contains(window.windowID) else { return false }
                 // Keep real foreground apps (.regular) AND menu-bar/agent apps
                 // (.accessory / LSUIElement) — the latter still show genuine
                 // document/Settings windows as Mission Control thumbnails, so
@@ -668,6 +690,7 @@ final class MissionControlEngine {
             sinkWatchTicks = 0
             if layoutSettled {
                 layoutSettled = false
+                postSettleReanchorEligible = postSettleReanchorEligible || geometry != nil
                 overlayWindow?.orderOut(nil)
                 hovered = nil
                 Log.missionControl.debug("layout churning → hide overlay until settle")
@@ -695,19 +718,13 @@ final class MissionControlEngine {
             stableTicks += 1
             if stableTicks >= Self.settleTicks { // held still → MC has finished tiling
                 layoutSettled = true
-                Log.missionControl.notice("layout settled → show overlay (windows=\(self.windows.count, privacy: .public))")
-                // Clear the cursor guard so the very next resolve always shows, even with
-                // a stationary cursor (the cursor never moves during an MC swipe). This is
-                // what fixes the "lights occasionally don't appear on a normal enter" bug;
-                // the unseeded guard then only suppresses redundant re-resolves on later
-                // ticks. Applies equally to every re-tile's re-settle within a session.
-                lastMouseLocation = nil
-                // Re-assert the show for the next ~1.8 s: on a real trackpad swipe the
-                // recreate below can leave the overlay hidden, or lose the z-order race
-                // while the Dock keeps compositing its surface after the thumbnail
-                // frames settled (the single-window case, #3). `trackMouse` re-anchors
-                // a fresh window each tick it is hidden, plus at a few forced ticks, so
-                // the lights land once the Dock has finished entering.
+                Log.missionControl.notice("layout settled → overlay eligible after cursor movement (windows=\(self.windows.count, privacy: .public))")
+                // Re-assert a user-triggered show for the next ~1.8 s: on a real
+                // trackpad swipe the recreate below can leave the overlay hidden,
+                // or lose the z-order race while the Dock keeps compositing its
+                // surface after the thumbnail frames settled. A parked pointer
+                // still cannot perform the first display; an overlay that existed
+                // before this re-tile may use `postSettleReanchorEligible` below.
                 sinkWatchTicks = Self.sinkWatchTickBudget
                 // Rebuild the overlay window so it composites ABOVE the Dock's settled
                 // exposé surface (a window ordered-in before the tiling finished stays
@@ -742,9 +759,9 @@ final class MissionControlEngine {
 
     /// How many `trackMouse` ticks (~60 ms each) after a settle to keep re-asserting
     /// the overlay show. ~30 ticks (~1.8 s) comfortably outlasts the Dock finishing
-    /// its enter composite on a real trackpad swipe, so a *stationary* cursor
-    /// self-heals the fast-enter no-show (#3); after it elapses, only cursor movement
-    /// re-checks (steady-state, zero cost).
+    /// its enter composite on a real trackpad swipe. Once a cursor movement has
+    /// attempted a show, a stationary cursor can self-heal the fast-enter no-show
+    /// (#3); after it elapses, only cursor movement re-checks (steady-state, zero cost).
     private static let sinkWatchTickBudget = 30
 
     /// Ticks (since settle) at which to re-anchor the overlay UNCONDITIONALLY during
@@ -769,22 +786,28 @@ final class MissionControlEngine {
     // MARK: - Hover tracking
 
     private func trackMouse() {
-        // Until Mission Control has finished entering (or re-tiling), keep the overlay
-        // hidden — otherwise the lights chase the still-moving thumbnails (the visible
-        // "lights appear before MC settles" bug). The settle detector in
-        // `refreshWindows` flips `layoutSettled` and calls back here to anchor on the
-        // now-stable layout.
-        guard layoutSettled else { return }
         guard let location = CGEvent(source: nil)?.location else { return }
         let cursorMoved = lastMouseLocation != location
         lastMouseLocation = location
-        // Steady-state early-out: the cursor is parked,
-        // a window is already resolved, and we are past the post-settle window in which
-        // the show could still have failed to paint — so there is nothing to do. We must
-        // NOT take this early-out while `sinkWatchTicks > 0` (a stationary cursor over an
-        // overlay that didn't paint has to be able to recover, #3) nor while nothing is
-        // resolved yet (`hovered == nil`, so a first transient miss keeps retrying).
-        if !cursorMoved, hovered != nil, sinkWatchTicks == 0 { return }
+
+        // Record movement even while Mission Control is entering or re-tiling.
+        // Otherwise movement during the gesture would look like a fresh move at
+        // settle and could show lights on a pointer that is already parked.
+        guard layoutSettled else { return }
+
+        // A stationary cursor may continue an already-started sink watch. If a
+        // visible overlay was present before a re-tile, the first post-settle
+        // tick may also reacquire its new window and restore it. Neither case is
+        // allowed to acquire the first overlay of a session while parked.
+        let stationaryExistingWatch = !cursorMoved
+            && hovered != nil
+            && sinkWatchTicks > 0
+        let stationaryRetileWatch = !cursorMoved
+            && hovered == nil
+            && sinkWatchTicks > 0
+            && postSettleReanchorEligible
+        guard cursorMoved || stationaryExistingWatch || stationaryRetileWatch else { return }
+        if stationaryRetileWatch { postSettleReanchorEligible = false }
         if sinkWatchTicks > 0 { sinkWatchTicks -= 1 }
 
         // The traffic-light cluster STRADDLES the thumbnail's top edge, so its outer
@@ -868,11 +891,11 @@ final class MissionControlEngine {
             clearOverlayContent()
             return
         }
-        // Settings-enabled actions narrowed to the controls this window actually
-        // has (resolved via AX). A popover / sheet / chrome-less panel exposes no
-        // title-bar buttons → empty → no overlay (fixes lights on popups). When
-        // Accessibility is unavailable the policy display is nil and we fall back
-        // to showing every enabled action (the legacy no-AX behaviour).
+        // Compose the display/hit-test controls only after the existing
+        // cache-first capability decision. A popover / sheet / chrome-less panel
+        // exposes no title-bar buttons → empty → no overlay (fixes lights on
+        // popups). When Accessibility is unavailable the policy preserves the
+        // legacy show-all fallback and adds Pin.
         // CACHE-FIRST: a window resolved once this session pays zero AX IPC here
         // — the session prewarm usually fills the cache before the first hover,
         // so a hover change shows in the same tick with no app round-trip. On a
@@ -880,22 +903,27 @@ final class MissionControlEngine {
         // cap); a blank outcome is healed by the bounded background retries,
         // whose merge re-shows this window the moment real buttons resolve.
         let requested = actionsProvider()
-        let effective: WindowCapabilities?
+        let capability: CapabilityResolution
         if let cached = capabilityCache[hovered.windowID] {
-            effective = cached
+            capability = .resolved(cached)
         } else {
-            let outcome = OverlayCapabilityPolicy.outcome(for: capabilityResolver.resolution(for: hovered))
+            let resolution = capabilityResolver.resolution(for: hovered)
+            let outcome = OverlayCapabilityPolicy.outcome(for: resolution)
             if let cache = outcome.cache { capabilityCache[hovered.windowID] = cache }
             if outcome.retry { requestBackgroundResolve([hovered]) }
-            effective = outcome.display
+            capability = resolution
         }
-        let actions = effective?.supported(from: requested) ?? requested
-        guard !actions.isEmpty else {
+        let controls = OverlayControlPolicy.controls(
+            pinState: pinStateProvider(hovered.windowID, hovered.ownerPID),
+            enabledActions: requested,
+            capability: capability
+        )
+        guard !controls.isEmpty else {
             clearOverlayContent()
             return
         }
-        currentActions = actions
-        let geo = OverlayGeometry(windowFrame: hovered.frame, actionCount: actions.count, pivotHeight: pivotHeight)
+        currentControls = controls
+        let geo = OverlayGeometry(windowFrame: hovered.frame, controlCount: controls.count, pivotHeight: pivotHeight)
         geometry = geo
         // Size the window to the cluster BEFORE mounting the SwiftUI content, so the
         // freshly-built `NSHostingView` is born at its FINAL bounds. The old order
@@ -907,10 +935,24 @@ final class MissionControlEngine {
         // `display: false` defers the redraw so no stale frame paints at the new size;
         // `orderFront` then shows the already-laid-out content in one shot.
         window.setFrame(geo.nsWindowFrame, display: false)
-        setOverlayContent(actions)
+        setOverlayContent(controls)
         window.orderFront(nil)
         let f = geo.nsWindowFrame
-        Log.missionControl.debug("overlay show win=\(window.windowNumber, privacy: .public) actions=\(actions.count, privacy: .public) ns=(\(Int(f.minX), privacy: .public),\(Int(f.minY), privacy: .public) \(Int(f.width), privacy: .public)x\(Int(f.height), privacy: .public)) visible=\(window.isVisible ? "y" : "n", privacy: .public) onActiveSpace=\(window.isOnActiveSpace ? "y" : "n", privacy: .public) screen=\(window.screen != nil ? "y" : "n", privacy: .public)")
+        Log.missionControl.debug("overlay show win=\(window.windowNumber, privacy: .public) controls=\(controls.count, privacy: .public) ns=(\(Int(f.minX), privacy: .public),\(Int(f.minY), privacy: .public) \(Int(f.width), privacy: .public)x\(Int(f.height), privacy: .public)) visible=\(window.isVisible ? "y" : "n", privacy: .public) onActiveSpace=\(window.isOnActiveSpace ? "y" : "n", privacy: .public) screen=\(window.screen != nil ? "y" : "n", privacy: .public)")
+    }
+
+    /// Called by PinManager after a synchronous or asynchronous ownership
+    /// snapshot change. Re-enumerate immediately so newly-created mirror panels
+    /// cannot become candidates, then refresh the parked hover in place. The
+    /// existing post-click latch remains authoritative: a Pin result arriving
+    /// after a click must not flash the just-acted cluster back on screen.
+    func pinStateDidChange() {
+        guard isRunning, sessionActive else { return }
+        if !windowFrames.isEmpty { refreshWindows() }
+        guard layoutSettled, hovered != nil,
+              !suppressOverlayReshow, !awaitFreshHoverAfterClick
+        else { return }
+        repositionOverlay()
     }
 
     // MARK: - Background capability resolution (prewarm + heal)
@@ -934,9 +976,11 @@ final class MissionControlEngine {
         // Detached: the batch resolve blocks its thread on AX IPC (bounded by
         // the 1 s global cap per read) — exactly what must never run on the
         // MainActor. Results and inputs are Sendable value types.
-        Task.detached(priority: .userInitiated) { [weak self] in
-            let resolutions = AccessibilityCapabilityResolver.resolutions(for: fresh)
-            await MainActor.run { self?.mergeBackgroundResolutions(resolutions, generation: generation) }
+        Task { @MainActor [weak self] in
+            let resolutions = await Task.detached(priority: .userInitiated) {
+                AccessibilityCapabilityResolver.resolutions(for: fresh)
+            }.value
+            self?.mergeBackgroundResolutions(resolutions, generation: generation)
         }
     }
 
@@ -1000,22 +1044,38 @@ final class MissionControlEngine {
     private func clearOverlayContent() {
         overlayWindow?.orderOut(nil)
         geometry = nil
-        currentActions = []
+        currentControls = []
     }
 
     // MARK: - Click & key handling
 
     /// If `point` lands on a traffic-light button (and Mission Control is genuinely
     /// open), perform that action, hide the overlay, and return `true` (consumed).
-    /// Returns `false` with no side effects when it was not a button hit. MC stays
-    /// open, so we do NOT latch — the lights re-appear on the next *fresh* hover,
-    /// letting the user keep managing windows (close one, hover the next).
+    /// Returns `false` with no side effects when it was not a button hit. Existing
+    /// window actions and Unpin keep MC open so the user can continue managing
+    /// windows; Pin is the exception because its mirror is hidden until MC exits.
     private func performButtonHit(at point: CGPoint) -> Bool {
         guard mcSurfacePresent, let geometry, let hovered,
-              let index = geometry.hitTest(point), index < currentActions.count
+              let index = geometry.hitTest(point), index < currentControls.count
         else { return false }
-        perform(currentActions[index], on: hovered)
-        hideOverlay()
+        let control = currentControls[index]
+        // A visible progress control consumes the click but has no executable
+        // operation. In particular, it must never fall through to Mission
+        // Control and must not call PinManager twice.
+        guard control.isEnabled else { return true }
+        switch control.executionKind {
+        case .pin, .unpin:
+            // Hide before invoking PinManager: its state callback is synchronous
+            // at the start of a toggle, and the post-click latch must already be
+            // set when that callback reaches the engine.
+            hideOverlay()
+            perform(control, on: hovered)
+        case .windowAction:
+            perform(control, on: hovered)
+            hideOverlay()
+        case .none:
+            return true
+        }
         return true
     }
 
@@ -1088,6 +1148,7 @@ final class MissionControlEngine {
         // must not re-light the just-clicked window; only the next fresh hover
         // may (`trackMouse` clears this on a windowID change).
         awaitFreshHoverAfterClick = true
+        postSettleReanchorEligible = false
         // End the post-settle re-anchor watch: a click means the overlay was up and the
         // user acted, so the fast-enter no-show (#3) is already resolved for this
         // session. Without this, a forced re-anchor tick would rebuild and re-show the
@@ -1159,6 +1220,26 @@ final class MissionControlEngine {
         performer.perform(action, on: window)
     }
 
+    private func perform(_ control: OverlayControl, on window: WindowInfo) {
+        if control.exitsMissionControlBeforeExecution {
+            // The click was swallowed by our event tap, so Mission Control will
+            // not dismiss itself. Begin its exit before PinManager starts the
+            // asynchronous capture; the normal surface poll remains the source
+            // of truth for when Mission Control is actually gone.
+            performer.wakeMissionControl()
+        }
+        switch control.executionKind {
+        case .pin, .unpin:
+            togglePinHandler(window)
+        case .windowAction(let action):
+            // Keep all existing WindowAction performer mappings, including
+            // zoom's Mission Control wake-up, in the original path.
+            perform(action, on: window)
+        case .none:
+            break
+        }
+    }
+
     // MARK: - Overlay window
 
     private func ensureOverlayWindow() {
@@ -1194,8 +1275,8 @@ final class MissionControlEngine {
         overlayWindow = window
     }
 
-    private func setOverlayContent(_ actions: [WindowAction]) {
-        overlayWindow?.contentView = NSHostingView(rootView: OverlayClusterView(actions: actions, locale: localeProvider(), hoverState: hoverState))
+    private func setOverlayContent(_ controls: [OverlayControl]) {
+        overlayWindow?.contentView = NSHostingView(rootView: OverlayClusterView(controls: controls, locale: localeProvider(), hoverState: hoverState))
     }
 
     /// Tear the overlay window down and let `ensureOverlayWindow` build a fresh

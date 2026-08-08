@@ -157,6 +157,58 @@
         }
       }
     },
+    "Activate Source Window": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quellfenster aktivieren"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activar ventana de origen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activer la fenêtre source"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ソースウインドウをアクティブにする"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ativar janela de origem"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Активировать исходное окно"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "激活源窗口"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "啟用來源視窗"
+          }
+        }
+      }
+    },
     "Active only while Mission Control is open.": {
       "localizations": {
         "de": {
@@ -361,6 +413,58 @@
           "stringUnit": {
             "state": "translated",
             "value": "變更會立即生效。"
+          }
+        }
+      }
+    },
+    "Capture suspended": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aufnahme angehalten"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Captura suspendida"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capture suspendue"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キャプチャは一時停止中"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Captura pausada"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Захват приостановлен"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "捕获已暂停"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "擷取已暫停"
           }
         }
       }
@@ -677,54 +781,54 @@
         }
       }
     },
-    "CloseUp needs Accessibility access to read the windows in Mission Control and to close, minimize, hide, or quit them. It never records your screen.": {
+    "CloseUp uses Accessibility to read Mission Control windows and perform its controls. Screen Recording is separate and used only for Pin: it mirrors only the selected window locally, captures no audio, records or saves no files, uploads no frames, and sends no analytics payload.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp benötigt Bedienungshilfen-Zugriff, um die Fenster in Mission Control zu lesen und sie zu schließen, zu minimieren, auszublenden oder zu beenden. Der Bildschirm wird niemals aufgezeichnet."
+            "value": "CloseUp verwendet Bedienungshilfen, um Fenster in Mission Control zu lesen und die entsprechenden Aktionen auszuführen. Die Bildschirmaufnahme ist davon unabhängig und wird nur für Pin verwendet: Es wird ausschließlich das ausgewählte Fenster lokal gespiegelt, ohne Audio aufzunehmen, Dateien zu erstellen oder zu speichern, Frames hochzuladen oder Analyse-Nutzdaten zu senden."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp necesita acceso de accesibilidad para leer las ventanas de Mission Control y cerrarlas, minimizarlas, ocultarlas o salir de ellas. Nunca graba tu pantalla."
+            "value": "CloseUp usa Accesibilidad para leer las ventanas de Mission Control y ejecutar sus acciones. La grabación de pantalla es independiente y solo se usa para Pin: refleja localmente únicamente la ventana seleccionada, sin capturar audio, grabar ni guardar archivos, subir fotogramas ni enviar datos de análisis."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp a besoin de l’accès à l’accessibilité pour lire les fenêtres de Mission Control et les fermer, réduire, masquer ou quitter. Il n’enregistre jamais votre écran."
+            "value": "CloseUp utilise l’accessibilité pour lire les fenêtres de Mission Control et exécuter ses actions. L’enregistrement d’écran est indépendant et utilisé uniquement pour Pin : seule la fenêtre sélectionnée est mise en miroir localement, sans audio, sans enregistrer ni sauvegarder de fichiers, sans téléverser d’images et sans envoyer de données analytiques."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp は、Mission Control 内のウインドウを読み取り、閉じる・しまう・非表示・終了するためにアクセシビリティ権限を必要とします。画面を録画することは一切ありません。"
+            "value": "CloseUp はアクセシビリティを使用して Mission Control のウインドウを読み取り、操作します。画面収録は独立した権限で、Pin にのみ使用されます。選択したウインドウだけをローカルでミラー表示し、音声の取得、録画やファイル保存、フレームのアップロード、分析データの送信は行いません。"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "O CloseUp precisa de acesso de acessibilidade para ler as janelas do Mission Control e fechá-las, minimizá-las, ocultá-las ou encerrá-las. Ele nunca grava a sua tela."
+            "value": "O CloseUp usa Acessibilidade para ler as janelas do Mission Control e executar seus controles. A Gravação de Tela é independente e usada apenas para o Pin: somente a janela selecionada é espelhada localmente, sem capturar áudio, gravar ou salvar arquivos, enviar quadros ou transmitir dados analíticos."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp нужен доступ к универсальному доступу, чтобы считывать окна в Mission Control и закрывать, сворачивать, скрывать или завершать их. Он никогда не записывает ваш экран."
+            "value": "CloseUp использует Универсальный доступ, чтобы читать окна в Mission Control и выполнять их действия. Запись экрана является отдельным разрешением и используется только для Pin: локально отображается только выбранное окно, без захвата звука, записи или сохранения файлов, отправки кадров и аналитических данных."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp 需要“辅助功能”权限来读取调度中心中的窗口，并对其执行关闭、最小化、隐藏或退出操作。它绝不会录制你的屏幕。"
+            "value": "CloseUp 使用“辅助功能”来读取调度中心中的窗口并执行相应操作。“屏幕录制”权限独立存在，仅用于 Pin：只在本地镜像显示选中的窗口，不采集音频、不录制或保存文件、不上传画面，也不发送分析数据。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "CloseUp 需要「輔助使用」權限來讀取調度中心中的視窗，並對其執行關閉、縮到最小、隱藏或結束操作。它絕不會錄製你的螢幕。"
+            "value": "CloseUp 使用「輔助使用」來讀取調度中心中的視窗並執行相關操作。「螢幕錄製」權限獨立存在，僅用於 Pin：只在本機鏡像顯示選取的視窗，不擷取音訊、不錄製或儲存檔案、不上傳畫面，也不傳送分析資料。"
           }
         }
       }
@@ -1977,6 +2081,58 @@
         }
       }
     },
+    "Pinned Window": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Angeheftetes Fenster"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ventana fijada"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fenêtre épinglée"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ピン留めしたウインドウ"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Janela fixada"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закреплённое окно"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已固定的窗口"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已固定的視窗"
+          }
+        }
+      }
+    },
     "Quit App": {
       "localizations": {
         "de": {
@@ -2081,6 +2237,58 @@
         }
       }
     },
+    "Requesting…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wird angefordert …"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solicitando…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demande en cours…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要求中…"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solicitando…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запрос…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在请求…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在要求…"
+          }
+        }
+      }
+    },
     "Restore Default": {
       "localizations": {
         "de": {
@@ -2129,6 +2337,370 @@
           "stringUnit": {
             "state": "translated",
             "value": "回復預設值"
+          }
+        }
+      }
+    },
+    "Screen Recording": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bildschirmaufnahme"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabación de pantalla"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrement d’écran"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面収録"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gravação de Tela"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запись экрана"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "屏幕录制"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "螢幕錄製"
+          }
+        }
+      }
+    },
+    "Screen Recording access is available for Pin.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Zugriff auf die Bildschirmaufnahme ist für Pin verfügbar."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El acceso a la grabación de pantalla está disponible para Pin."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’accès à l’enregistrement d’écran est disponible pour Pin."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pin で画面収録を利用できます。"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O acesso à Gravação de Tela está disponível para o Pin."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступ к записи экрана доступен для Pin."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pin 已获得“屏幕录制”权限。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pin 已取得「螢幕錄製」權限。"
+          }
+        }
+      }
+    },
+    "Screen Recording access is required only for Pin. Set it up before using a selected-window mirror.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Zugriff auf die Bildschirmaufnahme wird nur für Pin benötigt. Richten Sie ihn ein, bevor Sie ein ausgewähltes Fenster spiegeln."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El acceso a la grabación de pantalla solo es necesario para Pin. Configúralo antes de usar un espejo de una ventana seleccionada."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’accès à l’enregistrement d’écran est requis uniquement pour Pin. Configurez-le avant d’utiliser le miroir d’une fenêtre sélectionnée."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面収録の許可は Pin にのみ必要です。選択したウインドウのミラーを使う前に設定してください。"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O acesso à Gravação de Tela é necessário apenas para o Pin. Configure-o antes de usar um espelho da janela selecionada."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступ к записи экрана нужен только для Pin. Настройте его перед использованием зеркала выбранного окна."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“屏幕录制”权限仅用于 Pin。使用选中窗口的镜像前，请先完成设置。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「螢幕錄製」權限僅用於 Pin。使用選取視窗的鏡像前，請先完成設定。"
+          }
+        }
+      }
+    },
+    "Screen Recording access was allowed, but CloseUp must be restarted before Pin can use it.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Zugriff auf die Bildschirmaufnahme wurde erlaubt, aber CloseUp muss neu gestartet werden, bevor Pin ihn verwenden kann."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se ha permitido el acceso a la grabación de pantalla, pero debes reiniciar CloseUp para que Pin pueda usarlo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’accès à l’enregistrement d’écran a été autorisé, mais CloseUp doit être redémarré avant que Pin puisse l’utiliser."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面収録へのアクセスは許可されましたが、Pin で使うには CloseUp を再起動する必要があります。"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O acesso à Gravação de Tela foi permitido, mas é necessário reiniciar o CloseUp para que o Pin possa usá-lo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступ к записи экрана разрешён, но перед использованием Pin необходимо перезапустить CloseUp."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“屏幕录制”权限已允许，但 CloseUp 必须重新启动后，Pin 才能使用。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「螢幕錄製」權限已允許，但必須重新啟動 CloseUp，Pin 才能使用。"
+          }
+        }
+      }
+    },
+    "Screen Recording access was denied. Allow it in System Settings to use Pin.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Zugriff auf die Bildschirmaufnahme wurde abgelehnt. Erlauben Sie ihn in den Systemeinstellungen, um Pin zu verwenden."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se ha denegado el acceso a la grabación de pantalla. Permítelo en Ajustes del Sistema para usar Pin."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’accès à l’enregistrement d’écran a été refusé. Autorisez-le dans Réglages Système pour utiliser Pin."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面収録へのアクセスが拒否されました。Pin を使うには「システム設定」で許可してください。"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O acesso à Gravação de Tela foi negado. Permita-o nos Ajustes do Sistema para usar o Pin."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В доступе к записи экрана отказано. Разрешите его в системных настройках, чтобы использовать Pin."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“屏幕录制”权限已被拒绝。请在“系统设置”中允许访问，以使用 Pin。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「螢幕錄製」權限遭到拒絕。請在「系統設定」中允許存取，才能使用 Pin。"
+          }
+        }
+      }
+    },
+    "Screen Recording access was revoked. Re-enable it to use Pin.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Zugriff auf die Bildschirmaufnahme wurde widerrufen. Aktivieren Sie ihn erneut, um Pin zu verwenden."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se ha revocado el acceso a la grabación de pantalla. Vuelve a activarlo para usar Pin."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’accès à l’enregistrement d’écran a été révoqué. Réactivez-le pour utiliser Pin."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面収録へのアクセスが取り消されました。Pin を使うには再度有効にしてください。"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O acesso à Gravação de Tela foi revogado. Ative-o novamente para usar o Pin."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступ к записи экрана отозван. Включите его снова, чтобы использовать Pin."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“屏幕录制”权限已被撤销。请重新开启后使用 Pin。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「螢幕錄製」權限已撤銷。請重新開啟後使用 Pin。"
+          }
+        }
+      }
+    },
+    "Set Up Screen Recording…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bildschirmaufnahme einrichten …"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurar la grabación de pantalla…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurer l’enregistrement d’écran…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面収録を設定…"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurar Gravação de Tela…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настроить запись экрана…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置“屏幕录制”…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定「螢幕錄製」…"
           }
         }
       }
@@ -2393,6 +2965,162 @@
         }
       }
     },
+    "Starting capture…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aufnahme wird gestartet…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciando la captura…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Démarrage de la capture…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キャプチャを開始しています…"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciando a captura…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запуск захвата…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在开始捕获…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在開始擷取…"
+          }
+        }
+      }
+    },
+    "Stopping capture…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aufnahme wird beendet…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deteniendo la captura…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrêt de la capture…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キャプチャを停止しています…"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parando a captura…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Остановка захвата…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在停止捕获…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在停止擷取…"
+          }
+        }
+      }
+    },
+    "Temporarily unavailable": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vorübergehend nicht verfügbar"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No disponible temporalmente"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporairement indisponible"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一時的に利用できません"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporariamente indisponível"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Временно недоступно"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂时不可用"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暫時無法使用"
+          }
+        }
+      }
+    },
     "Update checks are unavailable in development builds.": {
       "localizations": {
         "de": {
@@ -2441,6 +3169,110 @@
           "stringUnit": {
             "state": "translated",
             "value": "開發版本中無法檢查更新。"
+          }
+        }
+      }
+    },
+    "Unable to activate source window": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quellfenster konnte nicht aktiviert werden"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo activar la ventana de origen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible d’activer la fenêtre source"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ソースウインドウをアクティブにできませんでした"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível ativar a janela de origem"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось активировать исходное окно"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法激活源窗口"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法啟用來源視窗"
+          }
+        }
+      }
+    },
+    "Unpin Window": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fenster lösen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desfijar ventana"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Désépingler la fenêtre"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ウインドウのピン留めを解除"
+          }
+        },
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desafixar janela"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открепить окно"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取消固定窗口"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取消固定視窗"
           }
         }
       }

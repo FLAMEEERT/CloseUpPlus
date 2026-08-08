@@ -18,15 +18,15 @@ final class OverlayHoverState {
 /// Clicks are detected by the engine's EventTap against OverlayGeometry, never by
 /// these views.
 struct OverlayClusterView: View {
-    let actions: [WindowAction]
+    let controls: [OverlayControl]
     let locale: Locale
     let hoverState: OverlayHoverState
 
     var body: some View {
         HStack(spacing: OverlayGeometry.buttonSpacing) {
-            ForEach(Array(actions.enumerated()), id: \.element) { index, action in
+            ForEach(Array(controls.enumerated()), id: \.element.id) { index, control in
                 OverlayButtonView(
-                    action: action,
+                    control: control,
                     isHovered: hoverState.hoveredIndex == index
                 )
             }
@@ -38,21 +38,24 @@ struct OverlayClusterView: View {
 }
 
 private struct OverlayButtonView: View {
-    let action: WindowAction
+    let control: OverlayControl
     let isHovered: Bool
 
     var body: some View {
         ZStack {
             Circle().fill(DS.Palette.overlayButtonFill)
-            Image(systemName: action.symbolName)
+            Image(systemName: control.symbolName)
                 .font(.system(size: OverlayGeometry.symbolSize, weight: .bold))
                 .foregroundStyle(DS.Palette.overlayButtonSymbol)
         }
         .frame(width: OverlayGeometry.buttonSize, height: OverlayGeometry.buttonSize)
         .overlay(Circle().strokeBorder(DS.Palette.overlayButtonBorder, lineWidth: DS.Overlay.buttonBorderWidth))
         .shadow(color: DS.Palette.overlayButtonShadow, radius: DS.Overlay.buttonShadowRadius, y: DS.Overlay.buttonShadowYOffset)
+        .opacity(control.isEnabled ? 1.0 : 0.45)
         .scaleEffect(isHovered ? DS.Overlay.hoverLift : 1.0)
         .animation(DS.Motion.overlay, value: isHovered)
-        .help(LocalizedStringKey(action.titleKey))
+        .disabled(!control.isEnabled)
+        .accessibilityLabel(LocalizedStringKey(control.titleKey))
+        .help(LocalizedStringKey(control.titleKey))
     }
 }
